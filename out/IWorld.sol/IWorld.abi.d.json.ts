@@ -1,4 +1,4 @@
-[
+declare const abi: [
   {
     "type": "function",
     "name": "app__addTask",
@@ -2080,4 +2080,6 @@
     "name": "WrongChainId",
     "inputs": []
   }
-]
+];
+
+export default abi;

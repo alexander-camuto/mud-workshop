@@ -11,5 +11,7 @@ import { Direction } from "../common.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IMoveSystem {
+  error WrongChainId();
+
   function app__move(Direction direction) external;
 }

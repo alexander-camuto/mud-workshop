@@ -1,25 +1,17 @@
 import { Address } from "viem";
 
-export async function getWorldDeploy(chainId: number): Promise<{
-  chainId: number;
+import { worlds } from "./contract";
+
+export async function getWorldDeploy(): Promise<{
   address: Address;
   blockNumber: bigint | null;
 }> {
   // TODO: figure out how to catch vite:import-analysis error when this file is missing
-  const { default: worlds } = await import("../worlds.json").catch((error) => {
-    console.debug("Could not import worlds.json", error);
-    return { default: null };
-  });
-  const deploy = worlds?.[`${chainId}`];
-  if (!deploy) {
-    throw new Error(
-      `No world deploy found for chain ${chainId} in "worlds.json".`
-    );
+  if (!worlds[0] || !worlds[1] || worlds[0].address !== worlds[1].address) {
+    throw new Error(`Invalid "worlds.json".`);
   }
-  console.log("chain:", chainId, "world:", deploy);
   return {
-    chainId,
-    address: deploy.address,
-    blockNumber: deploy.blockNumber != null ? BigInt(deploy.blockNumber) : null,
+    address: worlds[0].address,
+    blockNumber: null,
   };
 }

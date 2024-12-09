@@ -19,7 +19,7 @@ export function Providers({ worldDeploy, children }: Props) {
     <QueryClientProvider client={queryClient}>
       <StashSyncProvider
         address={worldDeploy.address}
-        startBlock={worldDeploy.blockNumber ?? undefined}
+        startBlock={worldDeploy.blockNumber || undefined}
         stash={stash}
       >
         {children}

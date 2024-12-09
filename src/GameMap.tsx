@@ -1,10 +1,10 @@
 import { serialize } from "wagmi";
-import { Direction, enums } from "./common";
+import { Direction, enums, mapSize } from "./common";
 import { useKeyboardMovement } from "./useKeyboardMovement";
 import { Address, Hex, hexToBigInt, keccak256 } from "viem";
 import { ArrowDownIcon } from "./ui/icons/ArrowDownIcon";
 import { twMerge } from "tailwind-merge";
-import { client } from "./client";
+import { clients } from "./client";
 
 export type Props = {
   readonly players?: readonly {
@@ -16,8 +16,7 @@ export type Props = {
   readonly onMove?: (direction: Direction) => void;
 };
 
-const size = 40;
-const scale = 100 / size;
+const scale = 100 / mapSize;
 
 function getColorAngle(seed: Hex) {
   return Number(hexToBigInt(keccak256(seed)) % 360n);
@@ -61,13 +60,13 @@ export function GameMap({ players = [], onMove }: Props) {
               color: `hwb(${getColorAngle(player.player)} 40% 20%)`,
               width: `${scale}%`,
               height: `${scale}%`,
-              left: `${((((player.x + size / 2) % size) + size) % size) * scale}%`,
-              top: `${((size - ((player.y + size / 2) % size)) % size) * scale}%`,
+              left: `${player.x * scale}%`,
+              top: `${player.y * scale}%`,
             }}
             title={serialize(player, null, 2)}
           >
             {player.player.toLowerCase() ===
-            client.account.address?.toLowerCase() ? (
+            clients[0].account.address?.toLowerCase() ? (
               <div className="w-full h-full bg-current animate-ping opacity-50" />
             ) : null}
           </div>

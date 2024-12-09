@@ -14,7 +14,9 @@ export type enumValues = typeof enumValues;
 
 export type Direction = enums["Direction"][number];
 
-export const chainId = parseInt(import.meta.env.VITE_CHAIN_ID) || 31337;
+// export const chainIds = [901, 902] as const;
+
+export const mapSize = 40;
 
 export const url = new URL(window.location.href);
 

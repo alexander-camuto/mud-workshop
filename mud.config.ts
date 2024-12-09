@@ -17,7 +17,7 @@ export default defineWorld({
       key: ["id"],
     },
     Position: {
-      schema: { player: "address", x: "int32", y: "int32" },
+      schema: { player: "address", x: "uint32", y: "uint32" },
       key: ["player"],
     },
   },
@@ -25,6 +25,11 @@ export default defineWorld({
     {
       artifactPath:
         "@latticexyz/world-modules/out/Unstable_CallWithSignatureModule.sol/Unstable_CallWithSignatureModule.json",
+      root: true,
+    },
+    {
+      artifactPath:
+        "@latticexyz/world-module-crosschain/out/CrosschainModule.sol/CrosschainModule.json",
       root: true,
     },
   ],

@@ -7,9 +7,11 @@ procs:
     # So we have to manually restart Vite when we want to rebuild, but we also have to
     # skip the cache with `--force`. Not great, but this is the best we've got for now.
     shell: pnpm nodemon --exec "vite --force" --watch "../mud"
-  contracts:
-    shell: pnpm mud dev-contracts --rpc ${RPC_URL}
-  anvil:
-    shell: anvil
-  explorer:
-    shell: pnpm explorer --chainId=$VITE_CHAIN_ID
+  supersim:
+    shell: pnpm supersim
+  contracts-chain-A:
+    shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9545
+  contracts-chain-B:
+    shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9546
+  # explorer:
+  #   shell: pnpm explorer --chainId=$VITE_CHAIN_ID

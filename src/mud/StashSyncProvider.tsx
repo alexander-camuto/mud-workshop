@@ -4,14 +4,13 @@ import {
   SyncToStashResult,
 } from "@latticexyz/store-sync/internal";
 import { createContext, ReactNode, useContext, useEffect } from "react";
-import { chainId } from "../common";
 import { Address, publicActions, PublicClient } from "viem";
 import { useQuery } from "@tanstack/react-query";
-import { client } from "../client";
+import { clients } from "../client";
 
 /** @internal */
 export const StashSyncContext = createContext<{
-  sync?: SyncToStashResult;
+  sync?: SyncToStashResult[];
 } | null>(null);
 
 export type Props = {
@@ -32,20 +31,31 @@ export function StashSyncProvider({
     throw new Error("A `StashSyncProvider` cannot be nested inside another.");
   }
 
-  if (!client) {
-    throw new Error(`Unable to retrieve Viem client for chain ${chainId}.`);
-  }
 
   const { data: sync, error: syncError } = useQuery({
-    queryKey: ["syncToStash", client.chain.id, address, startBlock?.toString()],
-    queryFn: () =>
+    queryKey: ["syncToStash", address, startBlock?.toString()],
+    queryFn: async () => {
+      const [client1, client2] = clients;
+      if (!client1 || !client2) {
+        throw new Error("Missing client");
+      }
+
       // TODO: clear stash
-      syncToStash({
+      const sync1 = await syncToStash({
         stash,
-        publicClient: client.extend(publicActions) as PublicClient,
+        publicClient: client1.extend(publicActions) as PublicClient,
         address,
         startBlock,
-      }),
+      });
+      const sync2 = await syncToStash({
+        stash,
+        publicClient: client2.extend(publicActions) as PublicClient,
+        address,
+        startBlock,
+      });
+
+      return [sync1, sync2];
+    },
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -54,13 +64,20 @@ export function StashSyncProvider({
   if (syncError) throw syncError;
 
   useEffect(() => {
-    const sub = sync?.storedBlockLogs$.subscribe({
+    const [sync1, sync2] = sync || [undefined, undefined];
+    const sub1 = sync1?.storedBlockLogs$.subscribe({
+      error: (error) => console.error("got sync error", error),
+    });
+
+    const sub2 = sync2?.storedBlockLogs$.subscribe({
       error: (error) => console.error("got sync error", error),
     });
 
     return () => {
-      sync?.stopSync();
-      sub?.unsubscribe();
+      sync1?.stopSync();
+      sub1?.unsubscribe();
+      sync2?.stopSync();
+      sub2?.unsubscribe();
     };
   }, [sync]);
 
