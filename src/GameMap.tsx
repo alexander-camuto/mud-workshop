@@ -33,7 +33,19 @@ export function GameMap({ players = [], onMove }: Props) {
   useKeyboardMovement(onMove);
   return (
     <div className="aspect-square w-full max-w-[40rem]">
-      <div className="relative w-full h-full border-8 border-black/10">
+      <div className="relative w-full h-full">
+        {/* Left half blue outline and label */}
+        <div className="absolute left-0 top-0 w-1/2 h-full border-8 border-blue-500/50">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-blue-500/50 font-bold text-2xl">CHAIN 1</span>
+          </div>
+        </div>
+        {/* Right half red outline and label */}
+        <div className="absolute right-0 top-0 w-1/2 h-full border-8 border-red-500/50">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-red-500/50 font-bold text-2xl">CHAIN 2</span>
+          </div>
+        </div>
         {onMove
           ? enums.Direction.map((direction) => (
               <button

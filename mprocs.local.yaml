@@ -8,7 +8,7 @@ procs:
     # skip the cache with `--force`. Not great, but this is the best we've got for now.
     shell: pnpm nodemon --exec "vite --force" --watch "../mud"
   supersim:
-    shell: pnpm supersim
+    shell: supersim
   contracts-chain-A:
     shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9545
   contracts-chain-B:

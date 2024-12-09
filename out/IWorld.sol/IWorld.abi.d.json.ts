@@ -1640,6 +1640,11 @@ declare const abi: [
   },
   {
     "type": "error",
+    "name": "RecordNotOwned",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "Schema_InvalidLength",
     "inputs": [
       {

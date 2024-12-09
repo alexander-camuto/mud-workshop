@@ -5,7 +5,7 @@ import {System} from "@latticexyz/world/src/System.sol";
 
 import {crosschainSystem} from
   "@latticexyz/world-module-crosschain/src/namespaces/root/codegen/systems/CrosschainSystemLib.sol";
-import {CrosschainRecord} from
+import {CrosschainRecord, CrosschainRecordData} from
   "@latticexyz/world-module-crosschain/src/namespaces/crosschain/codegen/tables/CrosschainRecord.sol";
 
 import {Direction} from "./codegen/common.sol";
@@ -14,17 +14,23 @@ import {MAP_SIZE, POSITION_CHAIN_ID} from "./constants.sol";
 
 contract MoveSystem is System {
   error WrongChainId();
+  error RecordNotOwned();
   function move(Direction direction) public {
     address player = _msgSender();
 
     // If position crosschain record doesn't exist, create it
     bytes32 keyHash = keccak256(abi.encode(Position.encodeKeyTuple(player)));
+
     if (CrosschainRecord.getTimestamp(Position._tableId, keyHash) == 0){
       if (block.chainid != POSITION_CHAIN_ID) {
         revert WrongChainId();
       }
 
       crosschainSystem.create(Position._tableId, Position.encodeKeyTuple(player));
+    }
+
+    if (!CrosschainRecord.getOwned(Position._tableId, keyHash)) {
+      revert RecordNotOwned();
     }
 
     PositionData memory position = Position.get(player);
@@ -43,9 +49,9 @@ contract MoveSystem is System {
     Position.set(player, target);
 
     // If moving past the middle of the map, bridge
-    if (position.x != target.x && target.x == MAP_SIZE/2) {
+    if (position.x == MAP_SIZE/2-1 && target.x == MAP_SIZE/2) {
       crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), 902);
-    } else if (position.x != target.x && target.x == MAP_SIZE/2 - 1) {
+    } else if (position.x == MAP_SIZE/2 && target.x == MAP_SIZE/2 - 1) {
       crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), 901);
     }
   }

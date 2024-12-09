@@ -17,7 +17,8 @@
     "deploy:rhodolite": "env $(grep -v '#' .env.rhodolite | xargs) mprocs --config mprocs.testnet.deploy.yaml",
     "lint": "eslint .",
     "test": "tsc",
-    "mud:up": "mud set-version --tag main && pnpm install"
+    "mud:up": "mud set-version --tag main && pnpm install",
+    "automine": "pnpm tsx src/scripts/enableAutomine.ts"
   },
   "dependencies": {
     "@ark/util": "^0.18.0",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@latticexyz/cli": "link:../mud/packages/cli",
+    "@types/node": "^22.10.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.3.1",
@@ -58,6 +60,7 @@
     "postcss": "^8.4.47",
     "supersim": "^0.0.5",
     "tailwindcss": "^3.4.11",
+    "tsx": "^4.19.2",
     "typescript": "5.4.2",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"

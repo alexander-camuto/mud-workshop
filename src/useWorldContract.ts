@@ -1,9 +1,30 @@
 import { worldAbi } from "./common";
-import { getContract } from "viem";
+import {
+  Account,
+  Address,
+  Chain,
+  getContract,
+  Transport,
+  WalletClient,
+} from "viem";
 import { useSync } from "./mud/useSync";
 import { useQuery } from "@tanstack/react-query";
 import { clients } from "./client";
 import { worlds } from "./contract";
+
+function getWorld(
+  address: Address,
+  client: WalletClient<Transport, Chain, Account>,
+) {
+  return getContract({
+    abi: worldAbi,
+    address,
+    client: {
+      public: client,
+      wallet: client,
+    },
+  });
+}
 
 export function useWorldContract() {
   const sync = useSync();
@@ -17,14 +38,7 @@ export function useWorldContract() {
         throw new Error("Not connected.");
       }
 
-      return getContract({
-        abi: worldAbi,
-        address: world1.address,
-        client: {
-          public: client1,
-          wallet: client1,
-        },
-      });
+      return getWorld(world1.address, client1);
     },
     staleTime: Infinity,
     refetchOnMount: false,
@@ -39,14 +53,7 @@ export function useWorldContract() {
         throw new Error("Not connected.");
       }
 
-      return getContract({
-        abi: worldAbi,
-        address: world2.address,
-        client: {
-          public: client2,
-          wallet: client2,
-        },
-      });
+      return getWorld(world2.address, client2);
     },
     staleTime: Infinity,
     refetchOnMount: false,
@@ -61,11 +68,15 @@ export function useWorldContract() {
     waitForTransaction1 &&
     worldContract2 &&
     waitForTransaction2
-    ? {
-        worldContract1,
-        waitForTransaction1,
-        worldContract2,
-        waitForTransaction2,
-      }
-    : {};
+    ? ([
+        {
+          worldContract: worldContract1,
+          waitForTransaction: waitForTransaction1,
+        },
+        {
+          worldContract: worldContract2,
+          waitForTransaction: waitForTransaction2,
+        },
+      ] as const)
+    : undefined;
 }

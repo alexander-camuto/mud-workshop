@@ -6,7 +6,8 @@ import { useWorldContract } from "./useWorldContract";
 import { twMerge } from "tailwind-merge";
 
 export function Tasks() {
-  const { worldContract } = useWorldContract();
+  const worldContracts = useWorldContract();
+  const worldContract = worldContracts?.[0].worldContract;
   const tasks = useRecords({ stash, table: tables.Tasks });
   return (
     <div className="font-mono whitespace-pre select-none">
@@ -27,7 +28,7 @@ export function Tasks() {
                     console.log("reset task", hash);
                   } else {
                     console.log("completing task");
-                    await worldContract?.write.app__completeTask([task.id]);
+                    await worldContract.write.app__completeTask([task.id]);
                   }
                 }
               : undefined

@@ -12,6 +12,7 @@ import { Direction } from "../common.sol";
  */
 interface IMoveSystem {
   error WrongChainId();
+  error RecordNotOwned();
 
   function app__move(Direction direction) external;
 }

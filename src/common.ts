@@ -1,4 +1,5 @@
 import worldAbi from "../out/IWorld.sol/IWorld.abi.json";
+import crosschainSystemAbi from "@latticexyz/world-module-crosschain/out/CrosschainSystem.sol/CrosschainSystem.abi.json";
 import mudConfig from "../mud.config";
 
 export { mudConfig };
@@ -20,4 +21,4 @@ export const mapSize = 40;
 
 export const url = new URL(window.location.href);
 
-export { worldAbi };
+export { worldAbi, crosschainSystemAbi };

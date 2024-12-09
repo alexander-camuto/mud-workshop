@@ -2,41 +2,49 @@ import { useMemo } from "react";
 import { useSyncProgress } from "./mud/useSyncProgress";
 import { Explorer } from "./Explorer";
 import { stash } from "./mud/stash";
-import { Direction, enums, mapSize, tables } from "./common";
+import { crosschainSystemAbi, Direction, enums, mapSize, tables } from "./common";
 import { useRecords } from "./mud/useRecords";
 import { GameMap } from "./GameMap";
 import { Tasks } from "./Tasks";
 import { useWorldContract } from "./useWorldContract";
 import { account } from "./account";
+import {clients} from "./client";
+import { parseEventLogs } from "viem";
 
 export function App() {
   const { isLive, message, percentage } = useSyncProgress();
 
   const players = useRecords({ stash, table: tables.Position });
 
-  const { worldContract1, worldContract2 } = useWorldContract();
+  const worldContracts = useWorldContract();
+
   const onMove = useMemo(
     () => async (direction: Direction) => {
       const currentPlayer = players.find(player => player.player.toLowerCase() ===
             account.address?.toLowerCase());
 
-      if (!worldContract1 || !worldContract2) {
-        console.warn("World contract not available");
+      if (!worldContracts) {
+        console.warn("World contracts not available");
         return;
       }
 
-      // Not assigning worldContractX to a variable because of typing issues
-      if (!currentPlayer || currentPlayer.x < mapSize / 2) {
-            await worldContract1.write.app__move([
-              enums.Direction.indexOf(direction),
-            ]);
-      } else {
-            await worldContract2.write.app__move([
-              enums.Direction.indexOf(direction),
-            ]);
-      }
+      const [world, client] = (!currentPlayer || currentPlayer.x < mapSize / 2)
+        ? [worldContracts[0], clients[0]]
+        : [worldContracts[1], clients[1]];
+
+        const hash = await world.worldContract.write.app__move([
+          enums.Direction.indexOf(direction),
+        ]);
+
+      await world.waitForTransaction(hash);
+
+      // const receipt = await client.getTransactionReceipt({ hash });
+      // const logs = parseEventLogs({ abi: crosschainSystemAbi, eventName: "World_CrosschainRecord", logs: receipt.logs});
+      // await Promise.all(logs.map(log => {
+      //   console.log(log.args as any);
+      // }))
     },
-    [worldContract1, worldContract2, players]
+    [worldContracts, players]
   );
 
   return (
