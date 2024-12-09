@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { AccountButton } from "@latticexyz/entrykit/internal";
 import { useSyncProgress } from "./mud/useSyncProgress";
 import { Explorer } from "./Explorer";
 import { stash } from "./mud/stash";
@@ -39,10 +38,7 @@ export function App() {
         )}
       </div>
 
-      <div className="p-4 space-y-4">
-        <AccountButton />
-        {isLive ? <Tasks /> : null}
-      </div>
+      <div className="p-4 space-y-4">{isLive ? <Tasks /> : null}</div>
 
       <Explorer />
     </div>

@@ -10,6 +10,6 @@ procs:
   contracts:
     shell: pnpm mud dev-contracts --rpc ${RPC_URL}
   anvil:
-    shell: anvil --load-state anvil-state.json
+    shell: anvil
   explorer:
     shell: pnpm explorer --chainId=$VITE_CHAIN_ID

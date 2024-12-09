@@ -1,33 +1,26 @@
-import { useClient } from "wagmi";
-import { chainId, worldAbi } from "./common";
+import { worldAbi } from "./common";
 import { getContract } from "viem";
 import { useSync } from "./mud/useSync";
 import { useQuery } from "@tanstack/react-query";
-import {
-  useSessionClient,
-  useEntryKitConfig,
-} from "@latticexyz/entrykit/internal";
-import { observer } from "@latticexyz/explorer/observer";
+import { client } from "./client";
+import { world } from "./contract";
 
 export function useWorldContract() {
-  const { worldAddress } = useEntryKitConfig();
   const { waitForTransaction } = useSync();
-  const client = useClient({ chainId });
-  const { data: sessionClient } = useSessionClient();
 
   const { data: worldContract } = useQuery({
-    queryKey: ["worldContract", worldAddress, client?.uid, sessionClient?.uid],
+    queryKey: ["worldContract", world.address, client?.uid],
     queryFn: () => {
-      if (!client || !sessionClient) {
+      if (!client) {
         throw new Error("Not connected.");
       }
 
       return getContract({
         abi: worldAbi,
-        address: worldAddress,
+        address: world.address,
         client: {
           public: client,
-          wallet: sessionClient.extend(observer()),
+          wallet: client,
         },
       });
     },

@@ -4,10 +4,10 @@ import {
   SyncToStashResult,
 } from "@latticexyz/store-sync/internal";
 import { createContext, ReactNode, useContext, useEffect } from "react";
-import { useClient } from "wagmi";
 import { chainId } from "../common";
 import { Address, publicActions, PublicClient } from "viem";
 import { useQuery } from "@tanstack/react-query";
+import { client } from "../client";
 
 /** @internal */
 export const StashSyncContext = createContext<{
@@ -32,7 +32,6 @@ export function StashSyncProvider({
     throw new Error("A `StashSyncProvider` cannot be nested inside another.");
   }
 
-  const client = useClient({ chainId });
   if (!client) {
     throw new Error(`Unable to retrieve Viem client for chain ${chainId}.`);
   }

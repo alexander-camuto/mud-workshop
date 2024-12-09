@@ -1,11 +1,11 @@
-import { useEntryKitConfig } from "@latticexyz/entrykit/internal";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { chain } from "./chain";
+import { world } from "./contract";
 
 export function Explorer() {
   const [open, setOpen] = useState(false);
-  const { chain, worldAddress } = useEntryKitConfig();
-  const explorerUrl = chain.blockExplorers?.worldsExplorer?.url;
+  const explorerUrl = chain?.blockExplorers?.worldsExplorer?.url;
   if (!explorerUrl) return null;
 
   return (
@@ -18,7 +18,7 @@ export function Explorer() {
         {open ? "Close" : "Explore"}
       </button>
       <iframe
-        src={`${explorerUrl}/${worldAddress}`}
+        src={`${explorerUrl}/${world.address}`}
         className={twMerge("transition-all", open ? "h-[50vh]" : "h-0")}
       />
     </div>
