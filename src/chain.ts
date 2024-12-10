@@ -1,5 +1,9 @@
 import { defineChain } from "viem";
 
+// Get RPC URLs and assume fixed chain ids (we could get chain ids with the client but we need this quickly)
+const CHAIN1_RPC_URL = import.meta.env.VITE_RPC_URL_1;
+const CHAIN2_RPC_URL = import.meta.env.VITE_RPC_URL_2;
+
 const OPChain1 = defineChain({
   id: 901,
   name: "OPChainA",
@@ -10,8 +14,7 @@ const OPChain1 = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ["http://127.0.0.1:9545"],
-      webSocket: ["ws://127.0.0.1:9545"],
+      http: [CHAIN1_RPC_URL],
     },
   },
   fees: {
@@ -29,8 +32,7 @@ const OPChain2 = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ["http://127.0.0.1:9546"],
-      webSocket: ["ws://127.0.0.1:9546"],
+      http: [CHAIN2_RPC_URL],
     },
   },
   fees: {

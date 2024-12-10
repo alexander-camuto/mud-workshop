@@ -45,6 +45,7 @@ export async function relay(
   sourceClient: ExtendedClient,
   crosschainLog: CrosschainLog,
 ) {
+  console.log("Relaying...");
   const targetClient = clients.find(
     (client) => client.chain.id === Number(crosschainLog.args.toChainId),
   );
@@ -59,6 +60,7 @@ export async function relay(
   const currentTimestamp = await fetchTimestamp(targetClient);
 
   if (currentTimestamp < identifier.timestamp) {
+    console.log("Setting next timestamp");
     // Just for the demo
     const testClient = targetClient.extend((config) => ({
       mode: "anvil",
@@ -70,5 +72,8 @@ export async function relay(
     await testClient.mine({ blocks: 1 });
   }
 
-  return world.write.crosschainWrite([identifier, message]);
+  console.log("Relaying crosschain write");
+  return world.write.crosschainWrite([identifier, message], {
+    gasPrice: BigInt(0),
+  });
 }

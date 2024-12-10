@@ -23,6 +23,9 @@ export function App() {
   const onMove = useMemo(
     () => async (direction: Direction) => {
 
+    const currentPlayer = players.find(player => player.player.toLowerCase() ===
+        account.address?.toLowerCase());
+
       if (!worldContracts) {
         console.warn("World contracts not available");
         return;
@@ -34,17 +37,18 @@ export function App() {
 
         const hash = await world.worldContract.write.app__move([
           enums.Direction.indexOf(direction),
-        ]);
+        ], { gasPrice: BigInt(0)});
 
       await world.waitForTransaction(hash);
 
       const receipt = await client.waitForTransactionReceipt({ hash });
       const logs = parseEventLogs({ abi, eventName: "World_CrosschainRecord", logs: receipt.logs});
+      console.log({ logs })
       await Promise.all(logs.map(log =>
         relay(client, log)
       ))
     },
-    [worldContracts, currentPlayer]
+    [worldContracts, players]
   );
 
   return (

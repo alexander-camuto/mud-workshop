@@ -9,10 +9,10 @@ procs:
     shell: pnpm nodemon --exec "vite --force" --watch "../mud"
   supersim:
     shell: supersim
-  contracts-chain-A:
-    shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9545
-  contracts-chain-B:
-    shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9546
+  contracts-1:
+    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_1}
+  contracts-2:
+    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_2}
   chainconfig:
     shell: pnpm chainconfig
   # explorer:

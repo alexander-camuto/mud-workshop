@@ -1,13 +1,9 @@
 procs:
   client:
-    # Linking packages with `link:` causes issues with common dependencies like React and Wagmi.
-    # So instead, we're using `file:` for these.
-    #
-    # But installing packages with `file:` means Vite doesn't detect file changes.
-    # So we have to manually restart Vite when we want to rebuild, but we also have to
-    # skip the cache with `--force`. Not great, but this is the best we've got for now.
-    shell: pnpm nodemon --exec "vite --force" --watch "../mud"
-  contracts:
-    shell: pnpm mud dev-contracts --rpc ${RPC_URL} --worldAddress $(cat worlds.json | jq -r ".[\"${VITE_CHAIN_ID}\"].address // empty")
+    shell: pnpm nodemon --exec "vite --force"
+  contracts-1:
+    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_1} --worldAddress $(cat worlds.json | jq -r ".[\"${VITE_CHAIN_ID_1}\"].address // empty")
+  contracts-2:
+    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_2} --worldAddress $(cat worlds.json | jq -r ".[\"${VITE_CHAIN_ID_2}\"].address // empty")
   # explorer:
   #   shell: CHAIN_ID=${VITE_CHAIN_ID} pnpm explorer dev

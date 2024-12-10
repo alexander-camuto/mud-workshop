@@ -1,6 +1,5 @@
 procs:
-  deploy-contracts:
-    shell: mud deploy --rpc ${RPC_URL}
-  # deploy-factory:
-  #   cwd: ../coinbase-smart-wallet
-  #   shell: make deploy
+  deploy-contracts-1:
+    shell: mud deploy --rpc ${VITE_RPC_URL_1} --salt 0x123
+  deploy-contracts-2:
+    shell: mud deploy --rpc ${VITE_RPC_URL_2} --salt 0x123
