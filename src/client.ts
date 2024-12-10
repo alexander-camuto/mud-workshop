@@ -1,4 +1,12 @@
-import { createWalletClient, http, publicActions } from "viem";
+import {
+  Account,
+  Chain,
+  Transport,
+  WalletClient,
+  createWalletClient,
+  http,
+  publicActions,
+} from "viem";
 import { chains } from "./chain";
 import { account } from "./account";
 
@@ -16,7 +24,15 @@ export const client2 = createWalletClient({
   account,
 });
 
+function extendWithPublicActions(
+  client: WalletClient<Transport, Chain, Account>,
+) {
+  return client.extend(publicActions);
+}
+
+export type ExtendedClient = ReturnType<typeof extendWithPublicActions>;
+
 export const clients = [
-  client1.extend(publicActions),
-  client2.extend(publicActions),
+  extendWithPublicActions(client1),
+  extendWithPublicActions(client2),
 ] as const;

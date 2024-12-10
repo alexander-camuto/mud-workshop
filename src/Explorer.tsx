@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { chains } from "./chain";
-import { worlds } from "./contract";
+import { getWorldAddress } from "./contract";
 
 export function Explorer() {
   const [open, setOpen] = useState(false);
@@ -18,7 +18,7 @@ export function Explorer() {
         {open ? "Close" : "Explore"}
       </button>
       <iframe
-        src={`${explorerUrl}/${worlds[0].address}`}
+        src={`${explorerUrl}/${getWorldAddress()}`}
         className={twMerge("transition-all", open ? "h-[50vh]" : "h-0")}
       />
     </div>

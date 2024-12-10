@@ -1,12 +1,17 @@
-import { serialize } from "wagmi";
-import { Direction, enums, mapSize } from "./common";
+import { Direction, enums } from "./common";
 import { useKeyboardMovement } from "./useKeyboardMovement";
-import { Address, Hex, hexToBigInt, keccak256 } from "viem";
+import { Address } from "viem";
 import { ArrowDownIcon } from "./ui/icons/ArrowDownIcon";
 import { twMerge } from "tailwind-merge";
-import { clients } from "./client";
+import { Player } from "./Player";
 
 export type Props = {
+  readonly player?: {
+    readonly player: Address;
+    readonly x: number;
+    readonly y: number;
+  };
+
   readonly players?: readonly {
     readonly player: Address;
     readonly x: number;
@@ -16,11 +21,6 @@ export type Props = {
   readonly onMove?: (direction: Direction) => void;
 };
 
-const scale = 100 / mapSize;
-
-function getColorAngle(seed: Hex) {
-  return Number(hexToBigInt(keccak256(seed)) % 360n);
-}
 
 const rotateClassName = {
   North: "rotate-0",
@@ -29,10 +29,13 @@ const rotateClassName = {
   West: "-rotate-90",
 } as const satisfies Record<Direction, `${"" | "-"}rotate-${number}`>;
 
+
 export function GameMap({ players = [], onMove }: Props) {
   useKeyboardMovement(onMove);
+
   return (
-    <div className="aspect-square w-full max-w-[40rem]">
+    <div className="absolute inset-0 grid sm:grid-cols-[auto_16rem] place-items-center p-4">
+    <div className="aspect-square bg-lime-500 w-full max-w-[50rem] shadow-[0_0_10vmax_0_var(--tw-shadow-color)] shadow-lime-700">
       <div className="relative w-full h-full">
         {/* Left half blue outline and label */}
         <div className="absolute left-0 top-0 w-1/2 h-full border-8 border-blue-500/50">
@@ -65,24 +68,9 @@ export function GameMap({ players = [], onMove }: Props) {
           : null}
 
         {players.map((player) => (
-          <div
-            key={player.player}
-            className="absolute bg-current"
-            style={{
-              color: `hwb(${getColorAngle(player.player)} 40% 20%)`,
-              width: `${scale}%`,
-              height: `${scale}%`,
-              left: `${player.x * scale}%`,
-              top: `${player.y * scale}%`,
-            }}
-            title={serialize(player, null, 2)}
-          >
-            {player.player.toLowerCase() ===
-            clients[0].account.address?.toLowerCase() ? (
-              <div className="w-full h-full bg-current animate-ping opacity-50" />
-            ) : null}
-          </div>
+            <Player key={player.player} player={player}/>
         ))}
+        </div>
       </div>
     </div>
   );

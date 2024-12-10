@@ -7,15 +7,6 @@ export default defineWorld({
     Direction: ["North", "East", "South", "West"],
   },
   tables: {
-    Tasks: {
-      schema: {
-        id: "uint256",
-        createdAt: "uint256",
-        completedAt: "uint256",
-        description: "string",
-      },
-      key: ["id"],
-    },
     Position: {
       schema: { player: "address", x: "uint32", y: "uint32" },
       key: ["player"],

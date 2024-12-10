@@ -6,12 +6,5 @@
   "902": {
     "address": "0xfdf868ea710ffd8cd33b829c5aff79edd15ecd5f",
     "blockNumber": 9
-  },
-  "17420": {
-    "address": "0x9f6e8842542cf35a5d8a00c8c82bd059b5436182",
-    "blockNumber": 266485
-  },
-  "31337": {
-    "address": "0xfdf868ea710ffd8cd33b829c5aff79edd15ecd5f"
   }
 }
