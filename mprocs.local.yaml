@@ -13,5 +13,7 @@ procs:
     shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9545
   contracts-chain-B:
     shell: pnpm mud dev-contracts --rpc http://127.0.0.1:9546
+  chainconfig:
+    shell: pnpm chainconfig
   # explorer:
   #   shell: pnpm explorer --chainId=$VITE_CHAIN_ID

@@ -14,6 +14,9 @@ const OPChain1 = defineChain({
       webSocket: ["ws://127.0.0.1:9545"],
     },
   },
+  fees: {
+    defaultPriorityFee: 0n,
+  },
 });
 
 const OPChain2 = defineChain({
@@ -29,6 +32,9 @@ const OPChain2 = defineChain({
       http: ["http://127.0.0.1:9546"],
       webSocket: ["ws://127.0.0.1:9546"],
     },
+  },
+  fees: {
+    defaultPriorityFee: 0n,
   },
 });
 
