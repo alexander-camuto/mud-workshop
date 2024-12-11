@@ -29,7 +29,7 @@ async function fetchTimestamp(client: ExtendedClient, blockNumber?: bigint) {
 
 async function buildIdentifier(
   client: ExtendedClient,
-  log: CrosschainLog
+  log: CrosschainLog,
 ): Promise<CrosschainIdentifier> {
   const timestamp = await fetchTimestamp(client, log.blockNumber);
   return {
@@ -43,11 +43,11 @@ async function buildIdentifier(
 
 export async function relay(
   sourceClient: ExtendedClient,
-  crosschainLog: CrosschainLog
+  crosschainLog: CrosschainLog,
 ) {
   console.log("Relaying...");
   const targetClient = clients.find(
-    (client) => client.chain.id === Number(crosschainLog.args.toChainId)
+    (client) => client.chain.id === Number(crosschainLog.args.toChainId),
   );
   if (!targetClient) {
     throw new Error("Relayer: invalid chain id");
@@ -57,21 +57,39 @@ export async function relay(
 
   const world = getWorld(targetClient);
 
-  const currentTimestamp = await fetchTimestamp(targetClient);
+  const testClient = targetClient.extend((config) => ({
+    mode: "anvil",
+    ...testActions({ mode: "anvil" })(config),
+  }));
 
-  if (currentTimestamp < identifier.timestamp) {
-    console.log("Setting next timestamp");
+  while (true) {
+    const currentTimestamp = await fetchTimestamp(targetClient);
+    if (currentTimestamp >= identifier.timestamp) {
+      console.log("breaking");
+      break;
+    }
+
     // Just for the demo
-    const testClient = targetClient.extend((config) => ({
-      mode: "anvil",
-      ...testActions({ mode: "anvil" })(config),
-    }));
-    await testClient.setNextBlockTimestamp({
-      timestamp: identifier.timestamp,
-    });
-    await testClient.mine({ blocks: 1 });
+    console.log("Setting next timestamp");
+
+    try {
+      await testClient.setNextBlockTimestamp({
+        timestamp: identifier.timestamp,
+      });
+      await testClient.mine({ blocks: 1 });
+    } catch (e) {
+      console.error("Failed to set next timestamp");
+    }
   }
 
   console.log("Relaying crosschain write");
-  return world.write.crosschainWrite([identifier, message]);
+
+  try {
+    // TODO: should we add retries?
+    const hash = await world.write.crosschainWrite([identifier, message]);
+    await targetClient.waitForTransactionReceipt({ hash });
+    console.log("Crosschain write successfully relayed");
+  } catch (e) {
+    console.error("Failed to relay crosschain write :'(");
+  }
 }

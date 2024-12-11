@@ -38,7 +38,6 @@ export function GameMap({ players = [], onMove }: Props) {
   const portals1 = useRecords({ stash: stash1, table: tables.Portal });
   const portals2 = useRecords({ stash: stash2, table: tables.Portal });
   const portals = [...portals1, ...portals2];
-  console.log(portals);
 
   return (
     <div className="absolute inset-0 grid sm:grid-cols-[auto_16rem] place-items-center p-4">

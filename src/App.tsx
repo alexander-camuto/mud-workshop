@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSyncProgress } from "./mud/useSyncProgress";
 import { stash1, stash2 } from "./mud/stash";
 import { abi, Direction, enums, mapSize, tables } from "./common";
@@ -18,7 +18,7 @@ function usePlayers(stash: Stash) {
       const positions = Object.values(
         getRecords({ state, table: tables.Position }),
       );
-      return positions.filter((position) => {
+      return positions.map((position) => {
         const keyHash = keccak256(
           encodeAbiParameters(
             [{ type: "bytes32[]" }],
@@ -33,7 +33,7 @@ function usePlayers(stash: Stash) {
             keyHash,
           },
         });
-        return crosschainRecord?.owned;
+        return { ...position, owned: crosschainRecord?.owned || false };
       });
     },
     {
@@ -46,15 +46,33 @@ export function App() {
 
   const players1 = usePlayers(stash1);
   const players2 = usePlayers(stash2);
+  const players = [...players1, ...players2];
 
-  const players = useMemo(
-    () => [...players1, ...players2],
-    [players1, players2],
-  );
+  const ownedPlayers = useMemo(() => {
+    const unique = new Map();
+
+    players
+      .filter((player) => player.owned)
+      .forEach((player) => {
+        const key = player.player.toLowerCase();
+        // If we are in a weird state where there is a duplicate owned player, delete it
+        if (unique.has(key)) {
+          unique.delete(key);
+        } else {
+          unique.set(key, player);
+        }
+      });
+
+    return Array.from(unique.values());
+  }, [players1, players2]);
 
   const worldContracts = useWorldContract();
 
-  const currentPlayer = players.find(
+  const playerExists = players.some(
+    (player) => player.player.toLowerCase() === account.address?.toLowerCase(),
+  );
+
+  const currentPlayer = ownedPlayers.find(
     (player) => player.player.toLowerCase() === account.address?.toLowerCase(),
   );
 
@@ -65,9 +83,13 @@ export function App() {
         return;
       }
 
-      // TODO: !currentPlayer will also be true when bridging
+      if (playerExists && !currentPlayer) {
+        console.warn("Can't move while bridging");
+        return;
+      }
+
       const [world, client] =
-        !currentPlayer || currentPlayer.x < mapSize / 2
+        !playerExists || currentPlayer.x < mapSize / 2
           ? [worldContracts[0], clients[0]]
           : [worldContracts[1], clients[1]];
 
@@ -83,15 +105,22 @@ export function App() {
         eventName: "World_CrosschainRecord",
         logs: receipt.logs,
       });
-      await Promise.all(logs.map((log) => relay(client, log)));
+
+      if (logs.length > 0) {
+        await Promise.all(logs.map((log) => relay(client, log)));
+      }
     },
-    [worldContracts, currentPlayer],
+    [worldContracts, currentPlayer, playerExists],
   );
 
   return (
     <>
       {isLive ? (
-        <GameMap player={currentPlayer} players={players} onMove={onMove} />
+        <GameMap
+          player={currentPlayer}
+          players={ownedPlayers}
+          onMove={onMove}
+        />
       ) : (
         <div className="tabular-nums">
           {message} ({percentage.toFixed(1)}%)…
