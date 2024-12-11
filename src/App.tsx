@@ -9,6 +9,12 @@ import { clients } from "./client";
 import { parseEventLogs } from "viem";
 import { relay } from "./relay";
 import { usePlayers } from "./usePlayers";
+import { Explorer } from "./Explorer";
+
+const explorerUrls = [
+  import.meta.env.VITE_EXPLORER_URL_1,
+  import.meta.env.VITE_EXPLORER_URL2,
+];
 
 export function App() {
   const { isLive, message, percentage } = useSyncProgress();
@@ -114,7 +120,17 @@ export function App() {
   return (
     <>
       {isLive ? (
-        <GameMap players={playersToRender} onMove={onMove} />
+        <>
+          <GameMap players={playersToRender} onMove={onMove} />
+          <div className="fixed bottom-0 inset-x-0 flex gap-2">
+            <div className="flex-1">
+              <Explorer url={explorerUrls[0]} />
+            </div>
+            <div className="flex-1">
+              <Explorer url={explorerUrls[1]} />
+            </div>
+          </div>
+        </>
       ) : (
         <div className="tabular-nums">
           {message} ({percentage.toFixed(1)}%)…
