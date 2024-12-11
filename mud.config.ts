@@ -16,6 +16,16 @@ export default defineWorld({
       },
       key: ["player"],
     },
+    Portal: {
+      schema: {
+        x: "uint32",
+        y: "uint32",
+        toChainId: "uint256",
+        toX: "uint32",
+        toY: "uint32",
+      },
+      key: ["x", "y"],
+    },
   },
   modules: [
     {

@@ -10,6 +10,7 @@ import {CrosschainRecord, CrosschainRecordData} from
 
 import {Direction} from "./codegen/common.sol";
 import {Position, PositionData} from "./codegen/tables/Position.sol";
+import {Portal, PortalData} from "./codegen/tables/Portal.sol";
 import {MAP_SIZE, POSITION_CHAIN_ID} from "./constants.sol";
 
 contract MoveSystem is System {
@@ -44,6 +45,13 @@ contract MoveSystem is System {
       target.y += 1;
     } else if (direction == Direction.West && target.x > 0) {
       target.x -= 1;
+    }
+
+    PortalData memory portal = Portal.get(target.x, target.y);
+    if (portal.toChainId != 0) {
+      Position.set(player, PositionData({ x: portal.toX, y: portal.toY, direction: direction }));
+      crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), portal.toChainId);
+      return;
     }
 
     Position.set(player, target);
