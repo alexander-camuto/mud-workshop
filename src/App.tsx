@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSyncProgress } from "./mud/useSyncProgress";
 import { stash1, stash2 } from "./mud/stash";
 import { abi, Direction, enums, mapSize, tables } from "./common";
@@ -33,7 +33,11 @@ function usePlayers(stash: Stash) {
             keyHash,
           },
         });
-        return { ...position, owned: crosschainRecord?.owned || false };
+        return {
+          ...position,
+          timestamp: Number(crosschainRecord?.timestamp!),
+          owned: crosschainRecord?.owned!,
+        };
       });
     },
     {
@@ -52,16 +56,18 @@ export function App() {
     [players1, players2],
   );
 
-  const ownedPlayers = players.filter((player) => player.owned);
-
   const worldContracts = useWorldContract();
 
-  const playerExists = players.some(
-    (player) => player.player.toLowerCase() === account.address?.toLowerCase(),
-  );
-
-  const currentPlayer = ownedPlayers.find(
-    (player) => player.player.toLowerCase() === account.address?.toLowerCase(),
+  const currentPlayer = useMemo(
+    () =>
+      players
+        .filter(
+          (player) =>
+            player.player.toLowerCase() === account.address?.toLowerCase(),
+        )
+        .sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0))
+        .at(0),
+    [players],
   );
 
   const onMove = useMemo(
@@ -71,13 +77,13 @@ export function App() {
         return;
       }
 
-      if (playerExists && !currentPlayer) {
+      if (currentPlayer && !currentPlayer?.owned) {
         console.warn("Can't move while bridging");
         return;
       }
 
       const [world, client] =
-        !playerExists || currentPlayer!.x < mapSize / 2
+        !currentPlayer || currentPlayer.x < mapSize / 2
           ? [worldContracts[0], clients[0]]
           : [worldContracts[1], clients[1]];
 
@@ -102,17 +108,27 @@ export function App() {
         console.log(e instanceof Error ? e.message : String(e));
       }
     },
-    [worldContracts, currentPlayer, playerExists],
+    [worldContracts, currentPlayer],
   );
+
+  // Display owned players, or if there are two non-owned players, display the most recent one
+  const playersToRender = useMemo(() => {
+    const playersByAddress = new Map();
+
+    for (const player of players) {
+      const address = player.player.toLowerCase();
+      const existing = playersByAddress.get(address);
+      if (!existing || player.owned || player.timestamp > existing.timestamp) {
+        playersByAddress.set(address, player);
+      }
+    }
+    return Array.from(playersByAddress.values());
+  }, [players]);
 
   return (
     <>
       {isLive ? (
-        <GameMap
-          player={currentPlayer}
-          players={ownedPlayers}
-          onMove={onMove}
-        />
+        <GameMap players={playersToRender} onMove={onMove} />
       ) : (
         <div className="tabular-nums">
           {message} ({percentage.toFixed(1)}%)…

@@ -8,18 +8,12 @@ import { useRecords } from "./mud/useRecords";
 import { stash1, stash2 } from "./mud/stash";
 
 export type Props = {
-  readonly player?: {
-    readonly player: Address;
-    readonly x: number;
-    readonly y: number;
-    readonly direction: number;
-  };
-
   readonly players?: readonly {
     readonly player: Address;
     readonly x: number;
     readonly y: number;
     readonly direction: number;
+    readonly owned: boolean;
   }[];
 
   readonly onMove?: (direction: Direction) => void;
