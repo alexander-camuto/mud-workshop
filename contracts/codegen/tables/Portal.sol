@@ -17,9 +17,9 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct PortalData {
-  uint256 toChainId;
   uint32 toX;
   uint32 toY;
+  bool exists;
 }
 
 library Portal {
@@ -27,12 +27,12 @@ library Portal {
   ResourceId constant _tableId = ResourceId.wrap(0x74626170700000000000000000000000506f7274616c00000000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0028030020040400000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0009030004040100000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint32, uint32)
   Schema constant _keySchema = Schema.wrap(0x0008020003030000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint32, uint32)
-  Schema constant _valueSchema = Schema.wrap(0x002803001f030300000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, uint32, bool)
+  Schema constant _valueSchema = Schema.wrap(0x0009030003036000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -50,9 +50,9 @@ library Portal {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](3);
-    fieldNames[0] = "toChainId";
-    fieldNames[1] = "toX";
-    fieldNames[2] = "toY";
+    fieldNames[0] = "toX";
+    fieldNames[1] = "toY";
+    fieldNames[2] = "exists";
   }
 
   /**
@@ -70,52 +70,6 @@ library Portal {
   }
 
   /**
-   * @notice Get toChainId.
-   */
-  function getToChainId(uint32 x, uint32 y) internal view returns (uint256 toChainId) {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = bytes32(uint256(x));
-    _keyTuple[1] = bytes32(uint256(y));
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get toChainId.
-   */
-  function _getToChainId(uint32 x, uint32 y) internal view returns (uint256 toChainId) {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = bytes32(uint256(x));
-    _keyTuple[1] = bytes32(uint256(y));
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Set toChainId.
-   */
-  function setToChainId(uint32 x, uint32 y, uint256 toChainId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = bytes32(uint256(x));
-    _keyTuple[1] = bytes32(uint256(y));
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((toChainId)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set toChainId.
-   */
-  function _setToChainId(uint32 x, uint32 y, uint256 toChainId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = bytes32(uint256(x));
-    _keyTuple[1] = bytes32(uint256(y));
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((toChainId)), _fieldLayout);
-  }
-
-  /**
    * @notice Get toX.
    */
   function getToX(uint32 x, uint32 y) internal view returns (uint32 toX) {
@@ -123,7 +77,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint32(bytes4(_blob)));
   }
 
@@ -135,7 +89,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint32(bytes4(_blob)));
   }
 
@@ -147,7 +101,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((toX)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((toX)), _fieldLayout);
   }
 
   /**
@@ -158,7 +112,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((toX)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((toX)), _fieldLayout);
   }
 
   /**
@@ -169,7 +123,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint32(bytes4(_blob)));
   }
 
@@ -181,7 +135,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint32(bytes4(_blob)));
   }
 
@@ -193,7 +147,7 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((toY)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((toY)), _fieldLayout);
   }
 
   /**
@@ -204,7 +158,53 @@ library Portal {
     _keyTuple[0] = bytes32(uint256(x));
     _keyTuple[1] = bytes32(uint256(y));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((toY)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((toY)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get exists.
+   */
+  function getExists(uint32 x, uint32 y) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(x));
+    _keyTuple[1] = bytes32(uint256(y));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Get exists.
+   */
+  function _getExists(uint32 x, uint32 y) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(x));
+    _keyTuple[1] = bytes32(uint256(y));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function setExists(uint32 x, uint32 y, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(x));
+    _keyTuple[1] = bytes32(uint256(y));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function _setExists(uint32 x, uint32 y, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(x));
+    _keyTuple[1] = bytes32(uint256(y));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((exists)), _fieldLayout);
   }
 
   /**
@@ -242,8 +242,8 @@ library Portal {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint32 x, uint32 y, uint256 toChainId, uint32 toX, uint32 toY) internal {
-    bytes memory _staticData = encodeStatic(toChainId, toX, toY);
+  function set(uint32 x, uint32 y, uint32 toX, uint32 toY, bool exists) internal {
+    bytes memory _staticData = encodeStatic(toX, toY, exists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -258,8 +258,8 @@ library Portal {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint32 x, uint32 y, uint256 toChainId, uint32 toX, uint32 toY) internal {
-    bytes memory _staticData = encodeStatic(toChainId, toX, toY);
+  function _set(uint32 x, uint32 y, uint32 toX, uint32 toY, bool exists) internal {
+    bytes memory _staticData = encodeStatic(toX, toY, exists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -275,7 +275,7 @@ library Portal {
    * @notice Set the full data using the data struct.
    */
   function set(uint32 x, uint32 y, PortalData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.toChainId, _table.toX, _table.toY);
+    bytes memory _staticData = encodeStatic(_table.toX, _table.toY, _table.exists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -291,7 +291,7 @@ library Portal {
    * @notice Set the full data using the data struct.
    */
   function _set(uint32 x, uint32 y, PortalData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.toChainId, _table.toX, _table.toY);
+    bytes memory _staticData = encodeStatic(_table.toX, _table.toY, _table.exists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -306,12 +306,12 @@ library Portal {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint256 toChainId, uint32 toX, uint32 toY) {
-    toChainId = (uint256(Bytes.getBytes32(_blob, 0)));
+  function decodeStatic(bytes memory _blob) internal pure returns (uint32 toX, uint32 toY, bool exists) {
+    toX = (uint32(Bytes.getBytes4(_blob, 0)));
 
-    toX = (uint32(Bytes.getBytes4(_blob, 32)));
+    toY = (uint32(Bytes.getBytes4(_blob, 4)));
 
-    toY = (uint32(Bytes.getBytes4(_blob, 36)));
+    exists = (_toBool(uint8(Bytes.getBytes1(_blob, 8))));
   }
 
   /**
@@ -325,7 +325,7 @@ library Portal {
     EncodedLengths,
     bytes memory
   ) internal pure returns (PortalData memory _table) {
-    (_table.toChainId, _table.toX, _table.toY) = decodeStatic(_staticData);
+    (_table.toX, _table.toY, _table.exists) = decodeStatic(_staticData);
   }
 
   /**
@@ -354,8 +354,8 @@ library Portal {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 toChainId, uint32 toX, uint32 toY) internal pure returns (bytes memory) {
-    return abi.encodePacked(toChainId, toX, toY);
+  function encodeStatic(uint32 toX, uint32 toY, bool exists) internal pure returns (bytes memory) {
+    return abi.encodePacked(toX, toY, exists);
   }
 
   /**
@@ -365,11 +365,11 @@ library Portal {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    uint256 toChainId,
     uint32 toX,
-    uint32 toY
+    uint32 toY,
+    bool exists
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(toChainId, toX, toY);
+    bytes memory _staticData = encodeStatic(toX, toY, exists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -386,5 +386,17 @@ library Portal {
     _keyTuple[1] = bytes32(uint256(y));
 
     return _keyTuple;
+  }
+}
+
+/**
+ * @notice Cast a value to a bool.
+ * @dev Boolean values are encoded as uint8 (1 = true, 0 = false), but Solidity doesn't allow casting between uint8 and bool.
+ * @param value The uint8 value to convert.
+ * @return result The boolean value.
+ */
+function _toBool(uint8 value) pure returns (bool result) {
+  assembly {
+    result := value
   }
 }

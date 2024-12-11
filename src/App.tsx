@@ -17,7 +17,10 @@ export function App() {
   const players2 = usePlayers(stash2);
 
   const players = useMemo(
-    () => [...players1, ...players2],
+    () => [
+      ...players1.map((player) => ({ ...player, chainId: 901 })),
+      ...players2.map((player) => ({ ...player, chainId: 902 })),
+    ],
     [players1, players2],
   );
 
@@ -42,13 +45,23 @@ export function App() {
         return;
       }
 
-      if (currentPlayer && !currentPlayer?.owned) {
-        console.warn("Can't move while bridging");
-        return;
+      const isBridging = currentPlayer && !currentPlayer?.owned;
+      // if (isBridging) {
+      //   console.warn("Can't move while bridging");
+      //   return;
+      // }
+
+      let chainId: number;
+      if (isBridging) {
+        chainId = currentPlayer.chainId === 901 ? 902 : 901;
+      } else if (!currentPlayer || currentPlayer.x < mapSize / 2) {
+        chainId = 901;
+      } else {
+        chainId = 902;
       }
 
       const [world, client] =
-        !currentPlayer || currentPlayer.x < mapSize / 2
+        chainId === 901
           ? [worldContracts[0], clients[0]]
           : [worldContracts[1], clients[1]];
 

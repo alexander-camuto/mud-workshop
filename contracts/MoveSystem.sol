@@ -48,19 +48,21 @@ contract MoveSystem is System {
     }
 
     PortalData memory portal = Portal.get(target.x, target.y);
-    if (portal.toChainId != 0) {
-      Position.set(player, PositionData({ x: portal.toX, y: portal.toY, direction: direction }));
-      crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), portal.toChainId);
-      return;
+    if (portal.exists) {
+      target = PositionData({ x: portal.toX, y: portal.toY, direction: direction });
     }
 
     Position.set(player, target);
 
+    uint256 toChainId = getPositionChainId(target);
+
     // If moving past the middle of the map, bridge
-    if (position.x == MAP_SIZE/2-1 && target.x == MAP_SIZE/2) {
-      crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), 902);
-    } else if (position.x == MAP_SIZE/2 && target.x == MAP_SIZE/2 - 1) {
-      crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), 901);
+    if (toChainId != block.chainid) {
+      crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), toChainId);
     }
+  }
+
+  function getPositionChainId(PositionData memory position) private pure returns(uint256) {
+    return position.x < MAP_SIZE/2 ? 901 : 902;
   }
 }

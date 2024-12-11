@@ -20,9 +20,9 @@ export default defineWorld({
       schema: {
         x: "uint32",
         y: "uint32",
-        toChainId: "uint256",
         toX: "uint32",
         toY: "uint32",
+        exists: "bool",
       },
       key: ["x", "y"],
     },

@@ -86,9 +86,7 @@ export async function relay(
   try {
     // TODO: should we add retries?
     const hash = await world.write.crosschainWrite([identifier, message]);
-    console.log({ relayHash: hash });
-    const receipt = await targetClient.waitForTransactionReceipt({ hash });
-    console.log(receipt);
+    await targetClient.waitForTransactionReceipt({ hash });
     console.log("Crosschain write successfully relayed");
   } catch (e) {
     console.error("Failed to relay crosschain write :'(");

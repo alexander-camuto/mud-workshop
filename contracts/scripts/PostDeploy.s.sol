@@ -16,11 +16,11 @@ contract PostDeploy is Script {
     vm.startBroadcast(deployerPrivateKey);
 
     if (block.chainid == 901) {
-      Portal.set(5, 5, PortalData({ toX: 25, toY: 25, toChainId: 902 }));
+      Portal.set(5, 5, PortalData({ toX: 25, toY: 25, exists: true }));
     }
 
     if (block.chainid == 902) {
-      Portal.set(25, 25, PortalData({ toX: 5, toY: 5, toChainId: 901 }));
+      Portal.set(25, 25, PortalData({ toX: 5, toY: 5, exists: true }));
     }
 
     vm.stopBroadcast();
