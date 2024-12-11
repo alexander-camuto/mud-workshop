@@ -65,7 +65,6 @@ export async function relay(
   while (true) {
     const currentTimestamp = await fetchTimestamp(targetClient);
     if (currentTimestamp >= identifier.timestamp) {
-      console.log("breaking");
       break;
     }
 

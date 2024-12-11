@@ -46,25 +46,13 @@ export function App() {
 
   const players1 = usePlayers(stash1);
   const players2 = usePlayers(stash2);
-  const players = [...players1, ...players2];
 
-  const ownedPlayers = useMemo(() => {
-    const unique = new Map();
+  const players = useMemo(
+    () => [...players1, ...players2],
+    [players1, players2],
+  );
 
-    players
-      .filter((player) => player.owned)
-      .forEach((player) => {
-        const key = player.player.toLowerCase();
-        // If we are in a weird state where there is a duplicate owned player, delete it
-        if (unique.has(key)) {
-          unique.delete(key);
-        } else {
-          unique.set(key, player);
-        }
-      });
-
-    return Array.from(unique.values());
-  }, [players1, players2]);
+  const ownedPlayers = players.filter((player) => player.owned);
 
   const worldContracts = useWorldContract();
 
@@ -89,25 +77,29 @@ export function App() {
       }
 
       const [world, client] =
-        !playerExists || currentPlayer.x < mapSize / 2
+        !playerExists || currentPlayer!.x < mapSize / 2
           ? [worldContracts[0], clients[0]]
           : [worldContracts[1], clients[1]];
 
-      const hash = await world.worldContract.write.app__move([
-        enums.Direction.indexOf(direction),
-      ]);
+      try {
+        const hash = await world.worldContract.write.app__move([
+          enums.Direction.indexOf(direction),
+        ]);
 
-      await world.waitForTransaction(hash);
+        await world.waitForTransaction(hash);
 
-      const receipt = await client.waitForTransactionReceipt({ hash });
-      const logs = parseEventLogs({
-        abi,
-        eventName: "World_CrosschainRecord",
-        logs: receipt.logs,
-      });
+        const receipt = await client.waitForTransactionReceipt({ hash });
+        const logs = parseEventLogs({
+          abi,
+          eventName: "World_CrosschainRecord",
+          logs: receipt.logs,
+        });
 
-      if (logs.length > 0) {
-        await Promise.all(logs.map((log) => relay(client, log)));
+        if (logs.length > 0) {
+          await Promise.all(logs.map((log) => relay(client, log)));
+        }
+      } catch (e) {
+        console.log(e instanceof Error ? e.message : String(e));
       }
     },
     [worldContracts, currentPlayer, playerExists],
