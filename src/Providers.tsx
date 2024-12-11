@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { StashSyncProvider } from "./mud/StashSyncProvider";
-import { stash } from "./mud/stash";
 import { Address } from "viem";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -20,7 +19,6 @@ export function Providers({ worldDeploy, children }: Props) {
       <StashSyncProvider
         address={worldDeploy.address}
         startBlock={worldDeploy.blockNumber || undefined}
-        stash={stash}
       >
         {children}
       </StashSyncProvider>

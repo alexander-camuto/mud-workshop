@@ -29,7 +29,7 @@ async function fetchTimestamp(client: ExtendedClient, blockNumber?: bigint) {
 
 async function buildIdentifier(
   client: ExtendedClient,
-  log: CrosschainLog,
+  log: CrosschainLog
 ): Promise<CrosschainIdentifier> {
   const timestamp = await fetchTimestamp(client, log.blockNumber);
   return {
@@ -43,11 +43,11 @@ async function buildIdentifier(
 
 export async function relay(
   sourceClient: ExtendedClient,
-  crosschainLog: CrosschainLog,
+  crosschainLog: CrosschainLog
 ) {
   console.log("Relaying...");
   const targetClient = clients.find(
-    (client) => client.chain.id === Number(crosschainLog.args.toChainId),
+    (client) => client.chain.id === Number(crosschainLog.args.toChainId)
   );
   if (!targetClient) {
     throw new Error("Relayer: invalid chain id");
@@ -73,7 +73,5 @@ export async function relay(
   }
 
   console.log("Relaying crosschain write");
-  return world.write.crosschainWrite([identifier, message], {
-    gasPrice: BigInt(0),
-  });
+  return world.write.crosschainWrite([identifier, message]);
 }

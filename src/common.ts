@@ -6,11 +6,15 @@ const typedCrosschainSystemAbi =
   crosschainSystemAbi as typeof crosschainSystemAbiType;
 
 import mudConfig from "../mud.config";
+import crosschainConfig from "@latticexyz/world-module-crosschain/mud.config";
 
 export { mudConfig };
 export type mudConfig = typeof mudConfig;
 
-export const tables = mudConfig.namespaces.app.tables;
+export const tables = {
+  ...mudConfig.namespaces.app.tables,
+  ...crosschainConfig.namespaces.crosschain.tables,
+};
 export type tables = typeof tables;
 
 export const enums = mudConfig.enums;

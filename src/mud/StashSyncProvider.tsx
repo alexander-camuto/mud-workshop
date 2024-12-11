@@ -1,4 +1,3 @@
-import { Stash } from "@latticexyz/stash/internal";
 import {
   syncToStash,
   SyncToStashResult,
@@ -7,6 +6,7 @@ import { createContext, ReactNode, useContext, useEffect } from "react";
 import { Address, publicActions, PublicClient } from "viem";
 import { useQuery } from "@tanstack/react-query";
 import { clients } from "../client";
+import { stash1, stash2 } from "./stash";
 
 /** @internal */
 export const StashSyncContext = createContext<{
@@ -16,21 +16,14 @@ export const StashSyncContext = createContext<{
 export type Props = {
   address: Address;
   startBlock?: bigint;
-  stash: Stash;
   children: ReactNode;
 };
 
-export function StashSyncProvider({
-  address,
-  startBlock,
-  stash,
-  children,
-}: Props) {
+export function StashSyncProvider({ address, startBlock, children }: Props) {
   const existingValue = useContext(StashSyncContext);
   if (existingValue != null) {
     throw new Error("A `StashSyncProvider` cannot be nested inside another.");
   }
-
 
   const { data: sync, error: syncError } = useQuery({
     queryKey: ["syncToStash", address, startBlock?.toString()],
@@ -42,13 +35,13 @@ export function StashSyncProvider({
 
       // TODO: clear stash
       const sync1 = await syncToStash({
-        stash,
+        stash: stash1,
         publicClient: client1.extend(publicActions) as PublicClient,
         address,
         startBlock,
       });
       const sync2 = await syncToStash({
-        stash,
+        stash: stash2,
         publicClient: client2.extend(publicActions) as PublicClient,
         address,
         startBlock,
