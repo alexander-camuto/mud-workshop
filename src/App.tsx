@@ -1,50 +1,15 @@
 import { useMemo } from "react";
 import { useSyncProgress } from "./mud/useSyncProgress";
 import { stash1, stash2 } from "./mud/stash";
-import { abi, Direction, enums, mapSize, tables } from "./common";
+import { abi, Direction, enums, mapSize } from "./common";
 import { GameMap } from "./GameMap";
 import { useWorldContract } from "./useWorldContract";
 import { account } from "./account";
 import { clients } from "./client";
-import { keccak256, parseEventLogs, encodeAbiParameters, pad } from "viem";
+import { parseEventLogs } from "viem";
 import { relay } from "./relay";
-import { useStash } from "@latticexyz/stash/react";
-import { Stash, getRecord, getRecords } from "@latticexyz/stash/internal";
+import { usePlayers } from "./usePlayers";
 
-function usePlayers(stash: Stash) {
-  return useStash(
-    stash,
-    (state) => {
-      const positions = Object.values(
-        getRecords({ state, table: tables.Position }),
-      );
-      return positions.map((position) => {
-        const keyHash = keccak256(
-          encodeAbiParameters(
-            [{ type: "bytes32[]" }],
-            [[pad(position.player)]],
-          ),
-        );
-        const crosschainRecord = getRecord({
-          state,
-          table: tables.CrosschainRecord,
-          key: {
-            tableId: tables.Position.tableId,
-            keyHash,
-          },
-        });
-        return {
-          ...position,
-          timestamp: Number(crosschainRecord?.timestamp!),
-          owned: crosschainRecord?.owned!,
-        };
-      });
-    },
-    {
-      isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
-    },
-  );
-}
 export function App() {
   const { isLive, message, percentage } = useSyncProgress();
 

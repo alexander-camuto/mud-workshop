@@ -47,7 +47,7 @@ export function GameMap({ players = [], onMove }: Props) {
 
           {/* Portal line in the middle */}
           <div
-            className="absolute left-1/2 top-0 h-full w-4 -ml-2"
+            className="absolute left-1/2 top-0 h-full w-4 "
             style={{
               background: 'url("/portal.gif")',
               backgroundSize: "16px 16px",

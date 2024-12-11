@@ -26,10 +26,14 @@ export function Player({ player }: Props) {
     >
       <img
         src={"/fly.png"}
-        className={`w-[2em] h-[2em] pointer-events-none select-none touch-none`}
+        className={`
+          w-[2em] h-[2em]
+          pointer-events-none select-none touch-none
+          transition-all duration-100 ease-out
+          ${!player.owned && "animate-warp"}
+        `}
         style={{
           transform: `rotate(${player.direction * 90}deg)`,
-          transition: "transform 0.1s ease-out",
         }}
       />
     </div>
