@@ -43,12 +43,14 @@ export function App() {
 
       const isBridging = currentPlayer && !currentPlayer.owned;
 
-      let chainId: number;
       if (isBridging) {
-        // console.warn("Can't move while bridging");
-        // return;
-        chainId = currentPlayer.chainId === 901 ? 902 : 901;
-      } else if (!currentPlayer || currentPlayer.x < mapSize / 2) {
+        console.warn("Can't move while bridging");
+        return;
+        // chainId = currentPlayer.chainId === 901 ? 902 : 901;
+      }
+
+      let chainId: number;
+      if (!currentPlayer || currentPlayer.x < mapSize / 2) {
         chainId = 901;
       } else {
         chainId = 902;
@@ -60,24 +62,31 @@ export function App() {
           : [worldContracts[1], clients[1]];
 
       try {
+        const directionIndex = enums.Direction.indexOf(direction);
+        await world.worldContract.simulate.app__move([directionIndex]);
         const hash = await world.worldContract.write.app__move([
-          enums.Direction.indexOf(direction),
+          directionIndex,
         ]);
 
-        await client.sendTransaction({ to: client.account.address });
+        // await world.waitForTransaction(hash);
 
-        console.log("waiting for receipt 1");
-        await world.waitForTransaction(hash);
+        let receipt;
+        while (true) {
+          receipt = await client.getTransactionReceipt({ hash });
 
-        console.log("waiting for receipt 2");
-        const receipt = await client.waitForTransactionReceipt({ hash });
+          if (receipt) break;
+
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+
+        // const receipt = await client.waitForTransactionReceipt({ hash });
+
         const logs = parseEventLogs({
           abi,
           eventName: "World_CrosschainRecord",
           logs: receipt.logs,
         });
 
-        console.log("receipt logs", logs);
         if (logs.length > 0) {
           await Promise.all(logs.map((log) => relay(client, log)));
         }

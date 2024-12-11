@@ -36,13 +36,13 @@ export function StashSyncProvider({ address, startBlock, children }: Props) {
       // TODO: clear stash
       const sync1 = await syncToStash({
         stash: stash1,
-        publicClient: client1.extend(publicActions) as PublicClient,
+        publicClient: client1 as any,
         address,
         startBlock,
       });
       const sync2 = await syncToStash({
         stash: stash2,
-        publicClient: client2.extend(publicActions) as PublicClient,
+        publicClient: client2 as any,
         address,
         startBlock,
       });
