@@ -16,9 +16,13 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
+// Import user types
+import { Direction } from "../common.sol";
+
 struct PositionData {
   uint32 x;
   uint32 y;
+  Direction direction;
 }
 
 library Position {
@@ -26,12 +30,12 @@ library Position {
   ResourceId constant _tableId = ResourceId.wrap(0x74626170700000000000000000000000506f736974696f6e0000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0008020004040000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0009030004040100000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (address)
   Schema constant _keySchema = Schema.wrap(0x0014010061000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, uint32)
-  Schema constant _valueSchema = Schema.wrap(0x0008020003030000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, uint32, uint8)
+  Schema constant _valueSchema = Schema.wrap(0x0009030003030000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,9 +51,10 @@ library Position {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
+    fieldNames = new string[](3);
     fieldNames[0] = "x";
     fieldNames[1] = "y";
+    fieldNames[2] = "direction";
   }
 
   /**
@@ -151,6 +156,48 @@ library Position {
   }
 
   /**
+   * @notice Get direction.
+   */
+  function getDirection(address player) internal view returns (Direction direction) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(player)));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return Direction(uint8(bytes1(_blob)));
+  }
+
+  /**
+   * @notice Get direction.
+   */
+  function _getDirection(address player) internal view returns (Direction direction) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(player)));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return Direction(uint8(bytes1(_blob)));
+  }
+
+  /**
+   * @notice Set direction.
+   */
+  function setDirection(address player, Direction direction) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(player)));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked(uint8(direction)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set direction.
+   */
+  function _setDirection(address player, Direction direction) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(player)));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked(uint8(direction)), _fieldLayout);
+  }
+
+  /**
    * @notice Get the full data.
    */
   function get(address player) internal view returns (PositionData memory _table) {
@@ -183,8 +230,8 @@ library Position {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(address player, uint32 x, uint32 y) internal {
-    bytes memory _staticData = encodeStatic(x, y);
+  function set(address player, uint32 x, uint32 y, Direction direction) internal {
+    bytes memory _staticData = encodeStatic(x, y, direction);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -198,8 +245,8 @@ library Position {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(address player, uint32 x, uint32 y) internal {
-    bytes memory _staticData = encodeStatic(x, y);
+  function _set(address player, uint32 x, uint32 y, Direction direction) internal {
+    bytes memory _staticData = encodeStatic(x, y, direction);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -214,7 +261,7 @@ library Position {
    * @notice Set the full data using the data struct.
    */
   function set(address player, PositionData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.x, _table.y);
+    bytes memory _staticData = encodeStatic(_table.x, _table.y, _table.direction);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -229,7 +276,7 @@ library Position {
    * @notice Set the full data using the data struct.
    */
   function _set(address player, PositionData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.x, _table.y);
+    bytes memory _staticData = encodeStatic(_table.x, _table.y, _table.direction);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -243,10 +290,12 @@ library Position {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint32 x, uint32 y) {
+  function decodeStatic(bytes memory _blob) internal pure returns (uint32 x, uint32 y, Direction direction) {
     x = (uint32(Bytes.getBytes4(_blob, 0)));
 
     y = (uint32(Bytes.getBytes4(_blob, 4)));
+
+    direction = Direction(uint8(Bytes.getBytes1(_blob, 8)));
   }
 
   /**
@@ -260,7 +309,7 @@ library Position {
     EncodedLengths,
     bytes memory
   ) internal pure returns (PositionData memory _table) {
-    (_table.x, _table.y) = decodeStatic(_staticData);
+    (_table.x, _table.y, _table.direction) = decodeStatic(_staticData);
   }
 
   /**
@@ -287,8 +336,8 @@ library Position {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint32 x, uint32 y) internal pure returns (bytes memory) {
-    return abi.encodePacked(x, y);
+  function encodeStatic(uint32 x, uint32 y, Direction direction) internal pure returns (bytes memory) {
+    return abi.encodePacked(x, y, direction);
   }
 
   /**
@@ -297,8 +346,12 @@ library Position {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(uint32 x, uint32 y) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(x, y);
+  function encode(
+    uint32 x,
+    uint32 y,
+    Direction direction
+  ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(x, y, direction);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

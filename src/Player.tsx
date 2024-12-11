@@ -6,6 +6,7 @@ export type Props = {
     readonly player: Address;
     readonly x: number;
     readonly y: number;
+    readonly direction: number;
   };
 };
 
@@ -25,6 +26,10 @@ export function Player({ player }: Props) {
       <img
         src={"/fly.png"}
         className="w-[2em] h-[2em] pointer-events-none select-none touch-none"
+        style={{
+          transform: `rotate(${player.direction * 90}deg)`,
+          transition: "transform 0.1s ease-out",
+        }}
       />
     </div>
   );

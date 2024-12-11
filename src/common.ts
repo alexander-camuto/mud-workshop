@@ -1,7 +1,7 @@
 import worldAbi from "../out/IWorld.sol/IWorld.abi.json";
+import crosschainSystemAbi from "@latticexyz/world-module-crosschain/out/CrosschainSystem.sol/CrosschainSystem.abi.json";
 // QUICK HACK CUZ IM TIRED OF THIS
 import type crosschainSystemAbiType from "@latticexyz/world-module-crosschain/out/CrosschainSystem.sol/CrosschainSystem.abi.json.d.ts";
-import crosschainSystemAbi from "@latticexyz/world-module-crosschain/out/CrosschainSystem.sol/CrosschainSystem.abi.json";
 const typedCrosschainSystemAbi =
   crosschainSystemAbi as typeof crosschainSystemAbiType;
 

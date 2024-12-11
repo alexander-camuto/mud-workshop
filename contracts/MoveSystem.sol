@@ -35,7 +35,7 @@ contract MoveSystem is System {
 
     PositionData memory position = Position.get(player);
 
-    PositionData memory target = PositionData({ x: position.x, y: position.y });
+    PositionData memory target = PositionData({ x: position.x, y: position.y, direction: direction });
     if (direction == Direction.North && target.y > 0) {
       target.y -= 1;
     } else if (direction == Direction.East && target.x < MAP_SIZE - 1) {

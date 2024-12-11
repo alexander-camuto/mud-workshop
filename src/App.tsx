@@ -9,86 +9,63 @@ import { clients } from "./client";
 import { keccak256, parseEventLogs, encodeAbiParameters, pad } from "viem";
 import { relay } from "./relay";
 import { useStash } from "@latticexyz/stash/react";
-import { getRecord, getRecords } from "@latticexyz/stash/internal";
+import { Stash, getRecord, getRecords } from "@latticexyz/stash/internal";
 
+function usePlayers(stash: Stash) {
+  return useStash(
+    stash,
+    (state) => {
+      const positions = Object.values(
+        getRecords({ state, table: tables.Position }),
+      );
+      return positions.filter((position) => {
+        const keyHash = keccak256(
+          encodeAbiParameters(
+            [{ type: "bytes32[]" }],
+            [[pad(position.player)]],
+          ),
+        );
+        const crosschainRecord = getRecord({
+          state,
+          table: tables.CrosschainRecord,
+          key: {
+            tableId: tables.Position.tableId,
+            keyHash,
+          },
+        });
+        return crosschainRecord?.owned;
+      });
+    },
+    {
+      isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+    },
+  );
+}
 export function App() {
   const { isLive, message, percentage } = useSyncProgress();
 
-  const players1 = useStash(
-    stash1,
-    (state) => {
-      const positions = Object.values(
-        getRecords({ state, table: tables.Position })
-      );
-      return positions.filter((position) => {
-        const keyHash = keccak256(
-          encodeAbiParameters([{ type: "bytes32[]" }], [[pad(position.player)]])
-        );
-        const crosschainRecord = getRecord({
-          state,
-          table: tables.CrosschainRecord,
-          key: {
-            tableId: tables.Position.tableId,
-            keyHash,
-          },
-        });
-        return crosschainRecord?.owned;
-      });
-    },
-    {
-      isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
-    }
-  );
-
-  const players2 = useStash(
-    stash2,
-    (state) => {
-      const positions = Object.values(
-        getRecords({ state, table: tables.Position })
-      );
-      return positions.filter((position) => {
-        const keyHash = keccak256(
-          encodeAbiParameters([{ type: "bytes32[]" }], [[pad(position.player)]])
-        );
-        const crosschainRecord = getRecord({
-          state,
-          table: tables.CrosschainRecord,
-          key: {
-            tableId: tables.Position.tableId,
-            keyHash,
-          },
-        });
-        return crosschainRecord?.owned;
-      });
-    },
-    {
-      isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
-    }
-  );
+  const players1 = usePlayers(stash1);
+  const players2 = usePlayers(stash2);
 
   const players = useMemo(
     () => [...players1, ...players2],
-    [players1, players2]
+    [players1, players2],
   );
 
   const worldContracts = useWorldContract();
 
   const currentPlayer = players.find(
-    (player) => player.player.toLowerCase() === account.address?.toLowerCase()
+    (player) => player.player.toLowerCase() === account.address?.toLowerCase(),
   );
 
   const onMove = useMemo(
     () => async (direction: Direction) => {
-      const currentPlayer = players.find(
-        (player) =>
-          player.player.toLowerCase() === account.address?.toLowerCase()
-      );
-
       if (!worldContracts) {
         console.warn("World contracts not available");
         return;
       }
 
+      // TODO: !currentPlayer will also be true when bridging
       const [world, client] =
         !currentPlayer || currentPlayer.x < mapSize / 2
           ? [worldContracts[0], clients[0]]
@@ -106,10 +83,9 @@ export function App() {
         eventName: "World_CrosschainRecord",
         logs: receipt.logs,
       });
-      console.log({ logs });
       await Promise.all(logs.map((log) => relay(client, log)));
     },
-    [worldContracts, players]
+    [worldContracts, currentPlayer],
   );
 
   return (
