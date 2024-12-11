@@ -45,9 +45,9 @@ export function App() {
 
       let chainId: number;
       if (isBridging) {
-        console.warn("Can't move while bridging");
-        return;
-        // chainId = currentPlayer.chainId === 901 ? 902 : 901;
+        // console.warn("Can't move while bridging");
+        // return;
+        chainId = currentPlayer.chainId === 901 ? 902 : 901;
       } else if (!currentPlayer || currentPlayer.x < mapSize / 2) {
         chainId = 901;
       } else {
@@ -64,8 +64,12 @@ export function App() {
           enums.Direction.indexOf(direction),
         ]);
 
+        await client.sendTransaction({ to: client.account.address });
+
+        console.log("waiting for receipt 1");
         await world.waitForTransaction(hash);
 
+        console.log("waiting for receipt 2");
         const receipt = await client.waitForTransactionReceipt({ hash });
         const logs = parseEventLogs({
           abi,
@@ -73,6 +77,7 @@ export function App() {
           logs: receipt.logs,
         });
 
+        console.log("receipt logs", logs);
         if (logs.length > 0) {
           await Promise.all(logs.map((log) => relay(client, log)));
         }

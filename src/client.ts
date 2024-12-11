@@ -9,7 +9,7 @@ import {
 } from "viem";
 import { chains } from "./chain";
 import { account } from "./account";
-import { transactionQueue } from "@latticexyz/common/actions";
+// import { transactionQueue } from "@latticexyz/common/actions";
 
 export const client1 = createWalletClient({
   chain: chains[0],
@@ -26,9 +26,9 @@ export const client2 = createWalletClient({
 });
 
 function extendWithPublicActions(
-  client: WalletClient<Transport, Chain, Account>
+  client: WalletClient<Transport, Chain, Account>,
 ) {
-  return client.extend(publicActions).extend(transactionQueue());
+  return client.extend(publicActions);
 }
 
 export type ExtendedClient = ReturnType<typeof extendWithPublicActions>;
