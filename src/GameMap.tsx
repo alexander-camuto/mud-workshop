@@ -37,18 +37,23 @@ export function GameMap({ players = [], onMove }: Props) {
     <div className="absolute inset-0 grid sm:grid-cols-[auto_16rem] place-items-center p-4">
     <div className="aspect-square bg-lime-500 w-full max-w-[50rem] shadow-[0_0_10vmax_0_var(--tw-shadow-color)] shadow-lime-700">
       <div className="relative w-full h-full">
-        {/* Left half blue outline and label */}
-        <div className="absolute left-0 top-0 w-1/2 h-full border-8 border-blue-500/50">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-blue-500/50 font-bold text-2xl">CHAIN 1</span>
-          </div>
+        {/* Chain Labels at the top */}
+        <div className="absolute left-0 top-4 w-1/2 text-center">
+          <span className="text-blue-500 font-bold text-2xl">CHAIN 1</span>
         </div>
-        {/* Right half red outline and label */}
-        <div className="absolute right-0 top-0 w-1/2 h-full border-8 border-red-500/50">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-red-500/50 font-bold text-2xl">CHAIN 2</span>
-          </div>
+        <div className="absolute right-0 top-4 w-1/2 text-center">
+          <span className="text-red-500 font-bold text-2xl">CHAIN 2</span>
         </div>
+
+        {/* Portal line in the middle */}
+        <div className="absolute left-1/2 top-0 h-full w-4 -ml-2"
+          style={{
+            background: 'url("/portal.gif")',
+            backgroundSize: '16px 16px',
+            backgroundRepeat: 'repeat-y',
+            boxShadow: '0 0 20px 0 rgba(88, 40, 178, 0.7)'
+          }}
+        />
         {onMove
           ? enums.Direction.map((direction) => (
               <button
