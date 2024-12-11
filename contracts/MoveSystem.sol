@@ -56,7 +56,7 @@ contract MoveSystem is System {
 
     uint256 toChainId = getPositionChainId(target);
 
-    // If moving past the middle of the map, bridge
+    // If target position is in a different chain, bridge
     if (toChainId != block.chainid) {
       crosschainSystem.bridge(Position._tableId, Position.encodeKeyTuple(player), toChainId);
     }

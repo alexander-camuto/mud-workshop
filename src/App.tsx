@@ -26,17 +26,13 @@ export function App() {
 
   const worldContracts = useWorldContract();
 
-  const currentPlayer = useMemo(
-    () =>
-      players
-        .filter(
-          (player) =>
-            player.player.toLowerCase() === account.address?.toLowerCase(),
-        )
-        .sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0))
-        .at(0),
-    [players],
-  );
+  const currentPlayer = players
+    .filter(
+      (player) =>
+        player.player.toLowerCase() === account.address?.toLowerCase(),
+    )
+    .sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0))
+    .at(0);
 
   const onMove = useMemo(
     () => async (direction: Direction) => {
@@ -45,15 +41,13 @@ export function App() {
         return;
       }
 
-      const isBridging = currentPlayer && !currentPlayer?.owned;
-      // if (isBridging) {
-      //   console.warn("Can't move while bridging");
-      //   return;
-      // }
+      const isBridging = currentPlayer && !currentPlayer.owned;
 
       let chainId: number;
       if (isBridging) {
-        chainId = currentPlayer.chainId === 901 ? 902 : 901;
+        console.warn("Can't move while bridging");
+        return;
+        // chainId = currentPlayer.chainId === 901 ? 902 : 901;
       } else if (!currentPlayer || currentPlayer.x < mapSize / 2) {
         chainId = 901;
       } else {

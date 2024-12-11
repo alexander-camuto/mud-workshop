@@ -1,7 +1,7 @@
 import { useStash } from "@latticexyz/stash/react";
 import { Stash, getRecord, getRecords } from "@latticexyz/stash/internal";
 import { encodeAbiParameters, keccak256, pad } from "viem";
-import isEqual from "fast-deep-equal";
+// import isEqual from "fast-deep-equal";
 import { tables } from "./common";
 
 export function usePlayers(stash: Stash) {
@@ -34,7 +34,7 @@ export function usePlayers(stash: Stash) {
       });
     },
     {
-      isEqual,
+      isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
     },
   );
 }
