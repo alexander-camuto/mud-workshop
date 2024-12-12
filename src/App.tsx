@@ -33,7 +33,25 @@ export function App() {
     <div className="absolute inset-0 grid sm:grid-cols-[auto_16rem]">
       <div className="p-4 grid place-items-center">
         {isLive ? (
-          <GameMap players={players} onPlayerMove={onPlayerMove} onHunterMove={npc.move} onAddHunter={deployNPC} />
+          <GameMap
+	  players={players}
+	  onPlayerMove={onPlayerMove}
+	  onAddHunter={deployNPC}
+	    onHunterMove={(npcAddr, userAddr) => {
+
+	      const playerPosition = players.find(p => p.player.toLowerCase() === userAddr.toLowerCase());
+	      const npcPosition = players.find(p => p.player.toLowerCase() === npcAddr.toLowerCase());
+
+	      if (!playerPosition || !npcPosition) {
+		console.error("missing player or npc");
+		return;
+	      }
+
+	      const state = [playerPosition.x, playerPosition.y, npcPosition.x, npcPosition.y];
+
+	      npc.move(state, npcAddr);
+	    }}
+	  />
         ) : (
           <div className="tabular-nums">
             {message} ({percentage.toFixed(1)}%)…
