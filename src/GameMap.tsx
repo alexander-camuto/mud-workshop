@@ -45,28 +45,20 @@ export function GameMap({ players = [], onMove }: Props) {
             <span className="text-red-500 font-bold text-2xl">CHAIN 2</span>
           </div>
 
-          {/* Portal line in the middle */}
-          <div
-            className="absolute left-1/2 top-0 h-full w-4 "
-            style={{
-              background: 'url("/portal.gif")',
-              backgroundSize: "16px 16px",
-              backgroundRepeat: "repeat-y",
-              boxShadow: "0 0 20px 0 rgba(88, 40, 178, 0.7)",
-            }}
-          />
-
           {/* Individual portal tiles */}
           {[...portals].map((portal, index) => (
             <div
               key={index}
-              className="absolute w-8 h-8 rounded-full"
+              className="absolute rounded-full"
               style={{
                 left: `${portal.x * scale}%`,
                 top: `${portal.y * scale}%`,
                 background: 'url("/portal.gif")',
                 backgroundSize: "cover",
                 boxShadow: "0 0 10px 0 rgba(88, 40, 178, 0.7)",
+                height: `${scale}%`,
+                width: `${scale}%`,
+                transform: `scale(2)`,
               }}
             />
           ))}
@@ -78,7 +70,7 @@ export function GameMap({ players = [], onMove }: Props) {
                   className={twMerge(
                     "outline-0 absolute inset-0 cursor-pointer grid p-4",
                     rotateClassName[direction],
-                    "transition bg-gradient-to-t from-transparent via-transparent to-blue-50 text-blue-400 opacity-0 hover:opacity-40 active:opacity-100",
+                    "transition bg-gradient-to-t from-transparent via-transparent to-blue-50 text-blue-400 opacity-0 hover:opacity-40 active:opacity-100"
                   )}
                   style={{ clipPath: "polygon(0% 0%, 100% 0%, 50% 50%)" }}
                   onClick={() => onMove(direction)}

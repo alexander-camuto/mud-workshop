@@ -19,15 +19,18 @@ export function Player({ player }: Props) {
       className="absolute"
       style={{
         height: `${scale}%`,
+        width: `${scale}%`,
         left: `${player.x * scale}%`,
         top: `${player.y * scale}%`,
+        // transform: `translate(-50%, 50%)`,
+        transform: `scale(1.5)`,
+        zIndex: 1000,
       }}
       title={stringify(player, null, 2)}
     >
       <img
         src={"/fly.png"}
         className={`
-          w-[2em] h-[2em]
           pointer-events-none select-none touch-none
           transition-all duration-100 ease-out
           ${!player.owned && "animate-warp"}

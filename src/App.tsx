@@ -114,6 +114,17 @@ export function App() {
         <>
           <div className="flex justify-center items-center min-h-[80vh]">
             <GameMap players={playersToRender} onMove={onMove} />
+
+            {/* Portal line in the middle */}
+            <div
+              className="absolute left-1/2 top-0 h-full w-4 translate-x-[-50%]"
+              style={{
+                background: 'url("/portal.gif")',
+                backgroundSize: "16px 16px",
+                backgroundRepeat: "repeat-y",
+                boxShadow: "0 0 20px 0 rgba(88, 40, 178, 0.7)",
+              }}
+            />
           </div>
 
           {account.address && (
