@@ -10,7 +10,6 @@ import {Position, PositionData} from "./codegen/tables/Position.sol";
 import {MAP_SIZE} from "./constants.sol";
 import {IVerifier} from "./IVerifier.sol";
 
-
 // Simple NPC
 contract NPC {
   error InvalidProof();
@@ -46,7 +45,20 @@ contract NPC {
       revert InvalidProof();
     }
 
-    IWorld(world).app__move(direction);
+    // NPC speaks a different language  ¯\_(ツ)_/¯
+    uint32 nextX = npcPosition.x;
+    uint32 nextY = npcPosition.y;
+    if (direction == Direction.North) {
+      nextX += 1;
+    } else if (direction == Direction.East) {
+      nextX -= 1;
+    } else if (direction == Direction.South) {
+      nextY += 1;
+    } else if (direction == Direction.West) {
+      nextY -= 1;
+    }
+
+    IWorld(world).app__setPosition(address(this), nextX, nextY);
   }
 }
 

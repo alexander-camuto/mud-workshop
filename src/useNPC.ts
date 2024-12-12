@@ -99,6 +99,7 @@ async function computeMove (npcState: NPCState, ezState: EZKLState): Promise<Mov
   // Wait for all files to be fetched and created
   const files = await Promise.all(filePromises) as [File, File, File]
 
+  const start = Date.now();
   // convert the npcState to a json object of type `{"input_data": [[6, 6, 3, 9]]}` and then convert to file format
   const npcStateJson = JSON.stringify({ "input_data": [npcState] });
   const npcStateFile = new File([npcStateJson], 'input.json', { type: 'application/json' });
@@ -148,6 +149,10 @@ async function computeMove (npcState: NPCState, ezState: EZKLState): Promise<Mov
 
   const direction = Number(proofData.instances[0][4][1]);
 
+  const end = Date.now();
+  console.log(`Execution time: ${end - start} ms`);
+
+
   return {
     direction,
     proof: proofData.hex_proof
@@ -190,14 +195,10 @@ export function useNPC() {
   return {
     move: (state: NPCState, npcAddr: Address) => {
       if (ezkl) {
-	const start = Date.now();
 	console.log("computing move", state);
 	computeMove(state, ezkl)
 	  .then(result => {
 	    console.log(result)
-
-	    const end = Date.now();
-	    console.log(`Execution time: ${end - start} ms`);
 
 	    const npcContract = getNpcContract(npcAddr);
 
