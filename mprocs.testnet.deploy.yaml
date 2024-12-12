@@ -1,5 +1,5 @@
 procs:
   deploy-contracts-1:
-    shell: mud deploy --rpc ${VITE_RPC_URL_1} --salt 0x1234
+    shell: mud deploy --rpc ${VITE_REGION_1_RPC_URL_1} --salt 0x1234
   deploy-contracts-2:
-    shell: mud deploy --rpc ${VITE_RPC_URL_2} --salt 0x1234
+    shell: mud deploy --rpc ${VITE_REGION_1_RPC_URL_2} --salt 0x1234

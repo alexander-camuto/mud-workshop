@@ -2,7 +2,7 @@ import { Address, Log, concat, testActions } from "viem";
 import { ExtractAbiEvent } from "abitype";
 import { abi } from "./common";
 import { getWorld } from "./contract";
-import { ExtendedClient, clients } from "./client";
+import { ExtendedClient } from "./client";
 import { waitForTransactionReceipt } from "./waitForTransactionReceipt";
 
 type CrosschainLog = Log<
@@ -44,15 +44,10 @@ async function buildIdentifier(
 
 export async function relay(
   sourceClient: ExtendedClient,
+  targetClient: ExtendedClient,
   crosschainLog: CrosschainLog,
 ) {
   console.log("Relaying...");
-  const targetClient = clients.find(
-    (client) => client.chain.id === Number(crosschainLog.args.toChainId),
-  );
-  if (!targetClient) {
-    throw new Error("Relayer: invalid chain id");
-  }
   const identifier = await buildIdentifier(sourceClient, crosschainLog);
   const message = concat([...crosschainLog.topics, crosschainLog.data]);
 

@@ -7,23 +7,9 @@ import {
   http,
   publicActions,
 } from "viem";
-import { chains } from "./chain";
 import { account } from "./account";
 import { transactionQueue } from "@latticexyz/common/actions";
-
-export const client1 = createWalletClient({
-  chain: chains[0],
-  transport: http(),
-  pollingInterval: 10,
-  account,
-});
-
-export const client2 = createWalletClient({
-  chain: chains[1],
-  transport: http(),
-  pollingInterval: 10,
-  account,
-});
+import { getChains } from "./chain";
 
 function extendWithPublicActions(
   client: WalletClient<Transport, Chain, Account>,
@@ -33,7 +19,29 @@ function extendWithPublicActions(
 
 export type ExtendedClient = ReturnType<typeof extendWithPublicActions>;
 
-export const clients = [
-  extendWithPublicActions(client1),
-  extendWithPublicActions(client2),
-] as const;
+let clients: [ExtendedClient, ExtendedClient];
+
+export async function getClients(): Promise<[ExtendedClient, ExtendedClient]> {
+  if (!clients) {
+    const chains = await getChains();
+    const client1 = createWalletClient({
+      chain: chains[0],
+      transport: http(),
+      pollingInterval: 10,
+      account,
+    });
+
+    const client2 = createWalletClient({
+      chain: chains[1],
+      transport: http(),
+      pollingInterval: 10,
+      account,
+    });
+    clients = [
+      extendWithPublicActions(client1),
+      extendWithPublicActions(client2),
+    ] as const;
+  }
+
+  return clients;
+}

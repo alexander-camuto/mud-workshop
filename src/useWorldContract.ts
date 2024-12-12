@@ -1,40 +1,41 @@
 import { useSync } from "./mud/useSync";
 import { useQuery } from "@tanstack/react-query";
-import { clients } from "./client";
+import { ExtendedClient } from "./client";
 import { getWorld } from "./contract";
 
-export function useWorldContract() {
+export function useWorldContract(clients?: [ExtendedClient, ExtendedClient]) {
   const sync = useSync();
 
-  const [client1, client2] = clients;
   const { data: worldContract1 } = useQuery({
-    queryKey: ["worldContract", client1.uid],
+    queryKey: ["worldContract", clients?.[0]?.uid],
     queryFn: () => {
-      if (!client1) {
+      if (!clients?.[0]) {
         throw new Error("Not connected.");
       }
 
-      return getWorld(client1);
+      return getWorld(clients[0]);
     },
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    enabled: !!clients,
   });
 
   const { data: worldContract2 } = useQuery({
-    queryKey: ["worldContract", client2.uid],
+    queryKey: ["worldContract", clients?.[1]?.uid],
     queryFn: () => {
-      if (!client2) {
+      if (!clients?.[1]) {
         throw new Error("Not connected.");
       }
 
-      return getWorld(client2);
+      return getWorld(clients[1]);
     },
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    enabled: !!clients,
   });
 
   const waitForTransaction1 = sync[0]?.waitForTransaction;

@@ -2,8 +2,8 @@ procs:
   client:
     shell: pnpm nodemon --exec "vite --force"
   contracts-1:
-    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_1} --worldAddress $(cat worlds.json | jq -r ".[\"${VITE_CHAIN_ID_1}\"].address // empty")
+    shell: pnpm mud dev-contracts --rpc ${VITE_REGION_0_RPC_URL_1} --worldAddress $(cat worlds.json | jq -r ".[\"901\"].address // empty")
   contracts-2:
-    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_2} --worldAddress $(cat worlds.json | jq -r ".[\"${VITE_CHAIN_ID_2}\"].address // empty")
+    shell: pnpm mud dev-contracts --rpc ${VITE_REGION_0_RPC_URL_2} --worldAddress $(cat worlds.json | jq -r ".[\"902\"].address // empty")
   # explorer:
   #   shell: CHAIN_ID=${VITE_CHAIN_ID} pnpm explorer dev

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { StashSyncProvider } from "./mud/StashSyncProvider";
+import { StashSyncProvider } from "./mud/StashSyncProvider.1";
 import { Address } from "viem";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 

@@ -1,31 +1,11 @@
-import {
-  syncToStash,
-  SyncToStashResult,
-} from "@latticexyz/store-sync/internal";
-import { createContext, ReactNode, useContext, useEffect } from "react";
-import { Address } from "viem";
+import { syncToStash } from "@latticexyz/store-sync/internal";
+import { useContext, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExtendedClient } from "../client";
 import { stash1, stash2 } from "./stash";
+import { Props, StashSyncContext } from "./StashSyncProvider";
+import { getClients } from "../client";
 
-/** @internal */
-export const StashSyncContext = createContext<{
-  sync?: SyncToStashResult[];
-} | null>(null);
-
-export type Props = {
-  address: Address;
-  startBlock?: bigint;
-  children: ReactNode;
-  clients?: [ExtendedClient, ExtendedClient];
-};
-
-export function StashSyncProvider({
-  address,
-  startBlock,
-  children,
-  clients,
-}: Props) {
+export function StashSyncProvider({ address, startBlock, children }: Props) {
   const existingValue = useContext(StashSyncContext);
   if (existingValue != null) {
     throw new Error("A `StashSyncProvider` cannot be nested inside another.");
@@ -34,6 +14,7 @@ export function StashSyncProvider({
   const { data: sync, error: syncError } = useQuery({
     queryKey: ["syncToStash", address, startBlock?.toString()],
     queryFn: async () => {
+      const clients = await getClients();
       if (!clients) {
         throw new Error("Missing client");
       }

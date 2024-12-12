@@ -10,9 +10,9 @@ procs:
   supersim:
     shell: supersim
   contracts-1:
-    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_1}
+    shell: pnpm mud dev-contracts --rpc ${VITE_REGION_0_RPC_URL_1}
   contracts-2:
-    shell: pnpm mud dev-contracts --rpc ${VITE_RPC_URL_2}
+    shell: pnpm mud dev-contracts --rpc ${VITE_REGION_0_RPC_URL_2}
   chainconfig:
     shell: pnpm chainconfig
   # explorer:

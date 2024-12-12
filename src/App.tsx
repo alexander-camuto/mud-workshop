@@ -5,7 +5,7 @@ import { abi, Direction, enums, mapSize } from "./common";
 import { GameMap } from "./GameMap";
 import { useWorldContract } from "./useWorldContract";
 import { account } from "./account";
-import { ExtendedClient, clients } from "./client";
+import { ExtendedClient } from "./client";
 import {
   Address,
   encodeAbiParameters,
@@ -18,21 +18,17 @@ import { usePlayers } from "./usePlayers";
 import { Explorer } from "./Explorer";
 import { getWorld } from "./contract";
 import { waitForTransactionReceipt } from "./waitForTransactionReceipt";
-
-const explorerUrls = [
-  import.meta.env.VITE_EXPLORER_URL_1,
-  import.meta.env.VITE_EXPLORER_URL_2,
-];
+import { useClients } from "./useClients";
+import { useFastestRegion } from "./useFastestRegion";
 
 /*
   // From MoveSystem
   function getInitialPosition(address player) private pure returns(PositionData memory position) {
-    position.x = uint32(uint256(keccak256(abi.encode(player)))) % MAP_SIZE;
-    position.y = uint32(uint256(keccak256(abi.encode(position.x)))) % MAP_SIZE;
+    position.x = uint32(uint256(keccak256(abi.encode(player))) % MAP_SIZE);
+    position.y = uint32(uint256(keccak256(abi.encode(position.x))) % MAP_SIZE);
   }
 */
 function getInitialPosition(player: Address) {
-  console.log(player);
   const x = Number(
     hexToBigInt(
       keccak256(encodeAbiParameters([{ type: "address" }], [player])),
@@ -48,7 +44,8 @@ function getInitialPosition(player: Address) {
 }
 
 async function writeMove(
-  client: ExtendedClient,
+  sourceClient: ExtendedClient,
+  targetClient: ExtendedClient,
   worldContract: ReturnType<typeof getWorld>,
   direction: Direction,
 ) {
@@ -56,7 +53,7 @@ async function writeMove(
   await worldContract.simulate.app__move([directionIndex]);
   const hash = await worldContract.write.app__move([directionIndex]);
   // await world.waitForTransaction(hash);
-  const receipt = await waitForTransactionReceipt(client, hash);
+  const receipt = await waitForTransactionReceipt(sourceClient, hash);
 
   try {
     const logs = parseEventLogs({
@@ -66,7 +63,9 @@ async function writeMove(
     });
 
     if (logs.length > 0) {
-      await Promise.all(logs.map((log) => relay(client, log)));
+      await Promise.all(
+        logs.map((log) => relay(sourceClient, targetClient, log)),
+      );
     }
   } catch (e) {
     console.error("Relaying failed");
@@ -84,7 +83,12 @@ export function App() {
     [players1, players2],
   );
 
-  const worldContracts = useWorldContract();
+  const region = useFastestRegion();
+  const clients = useClients();
+
+  const worldContracts = useWorldContract(
+    clients as [ExtendedClient, ExtendedClient],
+  );
 
   const currentPlayer = players
     .filter(
@@ -98,6 +102,11 @@ export function App() {
     () => async (direction: Direction) => {
       if (!account.address) {
         console.warn("No player address");
+        return;
+      }
+
+      if (!clients) {
+        console.warn("Clients not available");
         return;
       }
 
@@ -117,14 +126,18 @@ export function App() {
         ? currentPlayer.x
         : getInitialPosition(account.address).x;
 
-      console.log(x);
-      const [world, client] =
+      const [world, sourceClient, targetClient] =
         x < mapSize / 2
-          ? [worldContracts[0], clients[0]]
-          : [worldContracts[1], clients[1]];
+          ? [worldContracts[0], clients[0], clients[1]]
+          : [worldContracts[1], clients[1], clients[0]];
 
       try {
-        await writeMove(client, world.worldContract, direction);
+        await writeMove(
+          sourceClient,
+          targetClient,
+          world.worldContract,
+          direction,
+        );
       } catch (e) {
         console.log(e instanceof Error ? e.message : String(e));
       }
@@ -168,12 +181,12 @@ export function App() {
           {account.address && (
             <div className="h-[120px] fixed bottom-0 inset-x-0 flex  gap-4 overflow-hidden">
               <Explorer
-                url={explorerUrls[0]}
+                url={region?.explorerUrls?.[0]}
                 address={account.address}
                 className="flex-1 [&]:mt-[-200px] h-[320px]"
               />
               <Explorer
-                url={explorerUrls[1]}
+                url={region?.explorerUrls?.[1]}
                 address={account.address}
                 className="flex-1 [&]:mt-[-200px] h-[320px]"
               />
