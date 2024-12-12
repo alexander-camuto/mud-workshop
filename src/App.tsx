@@ -5,16 +5,55 @@ import { abi, Direction, enums, mapSize } from "./common";
 import { GameMap } from "./GameMap";
 import { useWorldContract } from "./useWorldContract";
 import { account } from "./account";
-import { clients } from "./client";
-import { parseEventLogs } from "viem";
+import { ExtendedClient, clients } from "./client";
+import { Hex, parseEventLogs } from "viem";
 import { relay } from "./relay";
 import { usePlayers } from "./usePlayers";
 import { Explorer } from "./Explorer";
+import { getWorld } from "./contract";
 
 const explorerUrls = [
   import.meta.env.VITE_EXPLORER_URL_1,
   import.meta.env.VITE_EXPLORER_URL2,
 ];
+
+async function writeMove(
+  client: ExtendedClient,
+  worldContract: ReturnType<typeof getWorld>,
+  direction: Direction,
+) {
+  const directionIndex = enums.Direction.indexOf(direction);
+  await worldContract.simulate.app__move([directionIndex]);
+  const hash = await worldContract.write.app__move([directionIndex]);
+  // await world.waitForTransaction(hash);
+  const receipt = await waitForTransactionReceipt(client, hash);
+
+  try {
+    const logs = parseEventLogs({
+      abi,
+      eventName: "World_CrosschainRecord",
+      logs: receipt.logs,
+    });
+
+    if (logs.length > 0) {
+      await Promise.all(logs.map((log) => relay(client, log)));
+    }
+  } catch (e) {
+    console.error("Relaying failed");
+  }
+}
+
+async function waitForTransactionReceipt(client: ExtendedClient, hash: Hex) {
+  while (true) {
+    try {
+      return await client.getTransactionReceipt({ hash });
+    } catch (e) {
+      console.log(e instanceof Error ? e.message : String(e));
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
 
 export function App() {
   const { isLive, message, percentage } = useSyncProgress();
@@ -23,10 +62,7 @@ export function App() {
   const players2 = usePlayers(stash2);
 
   const players = useMemo(
-    () => [
-      ...players1.map((player) => ({ ...player, chainId: 901 })),
-      ...players2.map((player) => ({ ...player, chainId: 902 })),
-    ],
+    () => [...players1, ...players2],
     [players1, players2],
   );
 
@@ -52,50 +88,15 @@ export function App() {
       if (isBridging) {
         console.warn("Can't move while bridging");
         return;
-        // chainId = currentPlayer.chainId === 901 ? 902 : 901;
-      }
-
-      let chainId: number;
-      if (!currentPlayer || currentPlayer.x < mapSize / 2) {
-        chainId = 901;
-      } else {
-        chainId = 902;
       }
 
       const [world, client] =
-        chainId === 901
+        !currentPlayer || currentPlayer.x < mapSize / 2
           ? [worldContracts[0], clients[0]]
           : [worldContracts[1], clients[1]];
 
       try {
-        const directionIndex = enums.Direction.indexOf(direction);
-        await world.worldContract.simulate.app__move([directionIndex]);
-        const hash = await world.worldContract.write.app__move([
-          directionIndex,
-        ]);
-
-        // await world.waitForTransaction(hash);
-
-        let receipt;
-        while (true) {
-          receipt = await client.getTransactionReceipt({ hash });
-
-          if (receipt) break;
-
-          await new Promise((resolve) => setTimeout(resolve, 10));
-        }
-
-        // const receipt = await client.waitForTransactionReceipt({ hash });
-
-        const logs = parseEventLogs({
-          abi,
-          eventName: "World_CrosschainRecord",
-          logs: receipt.logs,
-        });
-
-        if (logs.length > 0) {
-          await Promise.all(logs.map((log) => relay(client, log)));
-        }
+        await writeMove(client, world.worldContract, direction);
       } catch (e) {
         console.log(e instanceof Error ? e.message : String(e));
       }
@@ -122,14 +123,6 @@ export function App() {
       {isLive ? (
         <>
           <GameMap players={playersToRender} onMove={onMove} />
-          <div className="fixed bottom-0 inset-x-0 flex gap-2">
-            <div className="flex-1">
-              <Explorer url={explorerUrls[0]} />
-            </div>
-            <div className="flex-1">
-              <Explorer url={explorerUrls[1]} />
-            </div>
-          </div>
         </>
       ) : (
         <div className="tabular-nums">
