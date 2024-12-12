@@ -21,7 +21,7 @@ const explorerUrls = [
 async function writeMove(
   client: ExtendedClient,
   worldContract: ReturnType<typeof getWorld>,
-  direction: Direction,
+  direction: Direction
 ) {
   const directionIndex = enums.Direction.indexOf(direction);
   await worldContract.simulate.app__move([directionIndex]);
@@ -52,15 +52,14 @@ export function App() {
 
   const players = useMemo(
     () => [...players1, ...players2],
-    [players1, players2],
+    [players1, players2]
   );
 
   const worldContracts = useWorldContract();
 
   const currentPlayer = players
     .filter(
-      (player) =>
-        player.player.toLowerCase() === account.address?.toLowerCase(),
+      (player) => player.player.toLowerCase() === account.address?.toLowerCase()
     )
     .sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0))
     .at(0);
@@ -90,7 +89,7 @@ export function App() {
         console.log(e instanceof Error ? e.message : String(e));
       }
     },
-    [worldContracts, currentPlayer],
+    [worldContracts, currentPlayer]
   );
 
   // Display owned players, or if there are two non-owned players, display the most recent one
@@ -128,7 +127,7 @@ export function App() {
           </div>
 
           {account.address && (
-            <div className="h-[120px] fixed bottom-0 inset-x-0 flex  opacity-80 gap-4 hover:opacity-100 overflow-hidden">
+            <div className="h-[120px] fixed bottom-0 inset-x-0 flex  gap-4 overflow-hidden">
               <Explorer
                 url={explorerUrls[0]}
                 address={account.address}
