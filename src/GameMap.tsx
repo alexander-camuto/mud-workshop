@@ -34,7 +34,7 @@ export function GameMap({ players = [], onMove }: Props) {
   const portals = [...portals1, ...portals2];
 
   return (
-    <div className="w-full absolute inset-0 grid place-items-center p-4">
+    <div className="w-full absolute inset-0 grid place-items-center">
       <div className="aspect-square bg-lime-500 w-full max-w-[50rem] shadow-[0_0_10vmax_0_var(--tw-shadow-color)] shadow-lime-700">
         <div className="relative w-full h-full">
           {/* Chain Labels at the top */}
