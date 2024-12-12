@@ -120,12 +120,12 @@ export function App() {
               <Explorer
                 url={explorerUrls[0]}
                 address={account.address}
-                className="flex-1 h-full [&]:mt-[-200px] h-[320px]"
+                className="flex-1 [&]:mt-[-200px] h-[320px]"
               />
               <Explorer
                 url={explorerUrls[0]}
                 address={account.address}
-                className="flex-1 h-full [&]:mt-[-200px] h-[320px]"
+                className="flex-1 [&]:mt-[-200px] h-[320px]"
               />
             </div>
           )}
