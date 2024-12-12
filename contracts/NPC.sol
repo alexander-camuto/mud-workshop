@@ -24,6 +24,9 @@ contract NPC {
     world = _world;
     verifier = _verifier;
     target = _target;
+
+    // sets initial position as oposite to player 0,0
+    IWorld(world).app__setPosition(address(this), 39, 39);
   }
 
   function move(bytes calldata proof, Direction direction) external {

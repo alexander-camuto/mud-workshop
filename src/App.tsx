@@ -14,7 +14,7 @@ export function App() {
 
   const players = useRecords({ stash, table: tables.Position });
 
-  const { worldContract } = useWorldContract();
+  const { worldContract, deployNPC } = useWorldContract();
   const onPlayerMove = useMemo(
     () =>
       worldContract
@@ -33,7 +33,7 @@ export function App() {
     <div className="absolute inset-0 grid sm:grid-cols-[auto_16rem]">
       <div className="p-4 grid place-items-center">
         {isLive ? (
-          <GameMap players={players} onPlayerMove={onPlayerMove} onHunterMove={npc.move} />
+          <GameMap players={players} onPlayerMove={onPlayerMove} onHunterMove={npc.move} onAddHunter={deployNPC} />
         ) : (
           <div className="tabular-nums">
             {message} ({percentage.toFixed(1)}%)…

@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { serialize, useAccount } from "wagmi";
 import { Direction, enums } from "./common";
 import { useKeyboardMovement } from "./useKeyboardMovement";
 import { Address, Hex, hexToBigInt, keccak256 } from "viem";
 import { ArrowDownIcon } from "./ui/icons/ArrowDownIcon";
+import { Button } from "./ui/Button";
 import { twMerge } from "tailwind-merge";
 import { NPCState } from "./useNPC";
 
@@ -15,7 +15,8 @@ export type Props = {
   }[];
 
   readonly onPlayerMove?: (direction: Direction) => void;
-  readonly onHunterMove?: (state: NPCState) => void;
+  readonly onHunterMove?: (hunter: Address) => void;
+  readonly onAddHunter?: (target: Address) => void;
 };
 
 const size = 40;
@@ -32,36 +33,16 @@ const rotateClassName = {
   West: "-rotate-90",
 } as const satisfies Record<Direction, `${"" | "-"}rotate-${number}`>;
 
-export function GameMap({ players = [], onPlayerMove, onHunterMove }: Props) {
+export function GameMap({ players = [], onPlayerMove, onHunterMove, onAddHunter }: Props) {
   const { address: userAddress } = useAccount();
-  const [turn, setTurn] = useState(userAddress);
-
   const isUser = (player: Address) => player?.toLowerCase() === userAddress?.toLowerCase();
 
-  const movePlayerWithTurn = (dir: Direction) => {
-    onPlayerMove(dir);
-    if (isUser(turn)) {
-      const nextTurn = players.find(p => !isUser(p.player));
-      if (nextTurn) {
-	setTurn(nextTurn.player);
-      }
-    }
-  }
-
-  const moveHunterWithTurn = () => {
-    const player = players.find(p => isUser(p.player));
-    const hunter = players.find(p => !isUser(p.player));
-    if (hunter && user) {
-      const state = [player.x, player.y, hunter.x, hunter.y];
-      onHunterMove(state);
-    }
-  }
-
-  useKeyboardMovement(movePlayerWithTurn);
+  useKeyboardMovement(onPlayerMove);
   return (
     <div className="aspect-square w-full max-w-[40rem]">
-      <div className={twMerge("relative w-full h-full border-8", isUser(turn) ? "border-black/10" : "border-red")}>
-        {(onPlayerMove && isUser(turn))
+     
+      <div className="relative w-full h-full border-8 border-black/10">
+        {onPlayerMove
           ? enums.Direction.map((direction) => (
               <button
                 key={direction}
@@ -72,12 +53,12 @@ export function GameMap({ players = [], onPlayerMove, onHunterMove }: Props) {
                   "transition bg-gradient-to-t from-transparent via-transparent to-blue-50 text-blue-400 opacity-0 hover:opacity-40 active:opacity-100"
                 )}
                 style={{ clipPath: "polygon(0% 0%, 100% 0%, 50% 50%)" }}
-                onClick={() => movePlayerWithTurn(direction)}
+                onClick={() => onPlayerMove(direction)}
               >
                 <ArrowDownIcon className="rotate-180 text-4xl self-start justify-self-center" />
               </button>
             ))
-	    : <button onClick={() => onHunterMove()}>Advance hunter</button>}
+	    : null}
 
         {players.map((player) => (
           <div
@@ -94,9 +75,19 @@ export function GameMap({ players = [], onPlayerMove, onHunterMove }: Props) {
           >
             {isUser(player.player) ? (
               <div className="w-full h-full bg-current animate-ping opacity-50" />
-            ) : null}
+	    ) : null}
           </div>
         ))}
+      </div>
+      <div className="p-4">
+	{players.filter(p => !isUser(p.player)).map(p => (
+	  <button key={p.player} className="text-4xl" onClick={() => {
+	    onHunterMove(p.player, userAddress);
+	  }}>🤖</button>
+	))}
+	<Button onClick={() => {
+	  onAddHunter(userAddress);
+	}}>➕</Button>
       </div>
     </div>
   );

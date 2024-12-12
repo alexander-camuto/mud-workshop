@@ -18,12 +18,13 @@ contract PostDeploy is Script {
 
 
     IVerifier verifier = new Halo2Verifier();
+    console.log(address(verifier));
 
     // TODO: set target
-    address target = address(msg.sender);
+    /* address target = address(msg.sender); */
 
-    NPC npc = new NPC(IWorld(worldAddress), verifier, target);
-    console.log(address(npc));
+    /* NPC npc = new NPC(IWorld(worldAddress), verifier, target); */
+    /* console.log(address(npc)); */
 
     vm.stopBroadcast();
   }

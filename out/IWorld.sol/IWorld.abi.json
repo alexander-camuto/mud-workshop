@@ -14,6 +14,29 @@
   },
   {
     "type": "function",
+    "name": "app__setPosition",
+    "inputs": [
+      {
+        "name": "player",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "x",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "y",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "batchCall",
     "inputs": [
       {

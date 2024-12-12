@@ -27,4 +27,8 @@ contract MoveSystem is System {
     position.y = targetY;
     Position.set(player, position);
   }
+  function setPosition(address player, uint32 x, uint32 y) public {
+    PositionData memory initialPosition = PositionData({x: x, y: y});
+    Position.set(player, initialPosition);
+  }
 }

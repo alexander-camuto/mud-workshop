@@ -12,4 +12,6 @@ import { Direction } from "../common.sol";
  */
 interface IMoveSystem {
   function app__move(Direction direction) external;
+
+  function app__setPosition(address player, uint32 x, uint32 y) external;
 }
