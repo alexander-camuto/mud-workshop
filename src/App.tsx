@@ -6,7 +6,13 @@ import { GameMap } from "./GameMap";
 import { useWorldContract } from "./useWorldContract";
 import { account } from "./account";
 import { ExtendedClient, clients } from "./client";
-import { parseEventLogs } from "viem";
+import {
+  Address,
+  encodeAbiParameters,
+  hexToBigInt,
+  keccak256,
+  parseEventLogs,
+} from "viem";
 import { relay } from "./relay";
 import { usePlayers } from "./usePlayers";
 import { Explorer } from "./Explorer";
@@ -18,10 +24,33 @@ const explorerUrls = [
   import.meta.env.VITE_EXPLORER_URL_2,
 ];
 
+/*
+  // From MoveSystem
+  function getInitialPosition(address player) private pure returns(PositionData memory position) {
+    position.x = uint32(uint256(keccak256(abi.encode(player)))) % MAP_SIZE;
+    position.y = uint32(uint256(keccak256(abi.encode(position.x)))) % MAP_SIZE;
+  }
+*/
+function getInitialPosition(player: Address) {
+  console.log(player);
+  const x = Number(
+    hexToBigInt(
+      keccak256(encodeAbiParameters([{ type: "address" }], [player])),
+    ) % BigInt(mapSize),
+  );
+
+  const y = Number(
+    hexToBigInt(keccak256(encodeAbiParameters([{ type: "uint32" }], [x]))) %
+      BigInt(mapSize),
+  );
+
+  return { x, y };
+}
+
 async function writeMove(
   client: ExtendedClient,
   worldContract: ReturnType<typeof getWorld>,
-  direction: Direction
+  direction: Direction,
 ) {
   const directionIndex = enums.Direction.indexOf(direction);
   await worldContract.simulate.app__move([directionIndex]);
@@ -52,20 +81,26 @@ export function App() {
 
   const players = useMemo(
     () => [...players1, ...players2],
-    [players1, players2]
+    [players1, players2],
   );
 
   const worldContracts = useWorldContract();
 
   const currentPlayer = players
     .filter(
-      (player) => player.player.toLowerCase() === account.address?.toLowerCase()
+      (player) =>
+        player.player.toLowerCase() === account.address?.toLowerCase(),
     )
     .sort((a, b) => (b.owned ? 1 : 0) - (a.owned ? 1 : 0))
     .at(0);
 
   const onMove = useMemo(
     () => async (direction: Direction) => {
+      if (!account.address) {
+        console.warn("No player address");
+        return;
+      }
+
       if (!worldContracts) {
         console.warn("World contracts not available");
         return;
@@ -78,8 +113,13 @@ export function App() {
         return;
       }
 
+      const x = currentPlayer
+        ? currentPlayer.x
+        : getInitialPosition(account.address).x;
+
+      console.log(x);
       const [world, client] =
-        !currentPlayer || currentPlayer.x < mapSize / 2
+        x < mapSize / 2
           ? [worldContracts[0], clients[0]]
           : [worldContracts[1], clients[1]];
 
@@ -89,7 +129,7 @@ export function App() {
         console.log(e instanceof Error ? e.message : String(e));
       }
     },
-    [worldContracts, currentPlayer]
+    [worldContracts, currentPlayer, account.address],
   );
 
   // Display owned players, or if there are two non-owned players, display the most recent one
@@ -106,7 +146,6 @@ export function App() {
     return Array.from(playersByAddress.values());
   }, [players]);
 
-  console.log(account.address);
   return (
     <>
       {isLive ? (

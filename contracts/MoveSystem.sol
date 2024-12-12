@@ -11,31 +11,37 @@ import {CrosschainRecord, CrosschainRecordData} from
 import {Direction} from "./codegen/common.sol";
 import {Position, PositionData} from "./codegen/tables/Position.sol";
 import {Portal, PortalData} from "./codegen/tables/Portal.sol";
-import {MAP_SIZE, POSITION_CHAIN_ID} from "./constants.sol";
+import {MAP_SIZE} from "./constants.sol";
 
 contract MoveSystem is System {
   error WrongChainId();
   error RecordNotOwned();
+
   function move(Direction direction) public {
     address player = _msgSender();
+    PositionData memory position = Position.get(player);
+
+    bytes32[] memory keyTuple = Position.encodeKeyTuple(player);
+    bytes32 keyHash = keccak256(abi.encode(keyTuple));
 
     // If position crosschain record doesn't exist, create it
-    bytes32 keyHash = keccak256(abi.encode(Position.encodeKeyTuple(player)));
-
     if (CrosschainRecord.getTimestamp(Position._tableId, keyHash) == 0){
-      if (block.chainid != POSITION_CHAIN_ID) {
+      position = getInitialPosition(player);
+
+      if (getPositionChainId(position) != block.chainid) {
         revert WrongChainId();
       }
 
-      crosschainSystem.create(Position._tableId, Position.encodeKeyTuple(player));
+      Position.set(player, position);
+      crosschainSystem.create(Position._tableId, keyTuple);
     }
 
+    // Check that this chain owns the position
     if (!CrosschainRecord.getOwned(Position._tableId, keyHash)) {
       revert RecordNotOwned();
     }
 
-    PositionData memory position = Position.get(player);
-
+    // Compute target position
     PositionData memory target = PositionData({ x: position.x, y: position.y, direction: direction });
     if (direction == Direction.North && target.y > 0) {
       target.y -= 1;
@@ -47,6 +53,7 @@ contract MoveSystem is System {
       target.x -= 1;
     }
 
+    // If we encounter a portal, move to the other side
     PortalData memory portal = Portal.get(target.x, target.y);
     if (portal.exists) {
       target = PositionData({ x: portal.toX, y: portal.toY, direction: direction });
@@ -64,5 +71,10 @@ contract MoveSystem is System {
 
   function getPositionChainId(PositionData memory position) private pure returns(uint256) {
     return position.x < MAP_SIZE/2 ? 901 : 902;
+  }
+
+  function getInitialPosition(address player) private pure returns(PositionData memory position) {
+    position.x = uint32(uint256(keccak256(abi.encode(player))) % MAP_SIZE);
+    position.y = uint32(uint256(keccak256(abi.encode(position.x))) % MAP_SIZE);
   }
 }

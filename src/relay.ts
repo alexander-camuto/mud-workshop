@@ -3,6 +3,7 @@ import { ExtractAbiEvent } from "abitype";
 import { abi } from "./common";
 import { getWorld } from "./contract";
 import { ExtendedClient, clients } from "./client";
+import { waitForTransactionReceipt } from "./waitForTransactionReceipt";
 
 type CrosschainLog = Log<
   bigint,
@@ -86,7 +87,7 @@ export async function relay(
   try {
     // TODO: should we add retries?
     const hash = await world.write.crosschainWrite([identifier, message]);
-    await targetClient.waitForTransactionReceipt({ hash });
+    await waitForTransactionReceipt(targetClient, hash);
     console.log("Crosschain write successfully relayed");
   } catch (e) {
     console.error("Failed to relay crosschain write :'(");
