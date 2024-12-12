@@ -6,7 +6,7 @@ import { GameMap } from "./GameMap";
 import { useWorldContract } from "./useWorldContract";
 import { account } from "./account";
 import { ExtendedClient, clients } from "./client";
-import { Hex, parseEventLogs } from "viem";
+import { parseEventLogs } from "viem";
 import { relay } from "./relay";
 import { usePlayers } from "./usePlayers";
 import { Explorer } from "./Explorer";
@@ -15,7 +15,7 @@ import { waitForTransactionReceipt } from "./waitForTransactionReceipt";
 
 const explorerUrls = [
   import.meta.env.VITE_EXPLORER_URL_1,
-  import.meta.env.VITE_EXPLORER_URL2,
+  import.meta.env.VITE_EXPLORER_URL_2,
 ];
 
 async function writeMove(
@@ -107,11 +107,30 @@ export function App() {
     return Array.from(playersByAddress.values());
   }, [players]);
 
+  console.log(account.address);
   return (
     <>
       {isLive ? (
         <>
-          <GameMap players={playersToRender} onMove={onMove} />
+          <div className="flex justify-center items-center min-h-[80vh]">
+            <GameMap players={playersToRender} onMove={onMove} />
+          </div>
+
+          {account.address && (
+            <div className="h-[30vh] fixed bottom-0 inset-x-0 flex  opacity-80 gap-4 hover:opacity-100 overflow-hidden">
+              <Explorer
+                url={explorerUrls[0]}
+                address={account.address}
+                className="flex-1 h-full [&]:mt-[-200px]"
+              />
+
+              <Explorer
+                url={explorerUrls[0]}
+                address={account.address}
+                className="flex-1 h-full [&]:mt-[-200px]"
+              />
+            </div>
+          )}
         </>
       ) : (
         <div className="tabular-nums">
