@@ -11,6 +11,7 @@ import { relay } from "./relay";
 import { usePlayers } from "./usePlayers";
 import { Explorer } from "./Explorer";
 import { getWorld } from "./contract";
+import { waitForTransactionReceipt } from "./waitForTransactionReceipt";
 
 const explorerUrls = [
   import.meta.env.VITE_EXPLORER_URL_1,
@@ -40,18 +41,6 @@ async function writeMove(
     }
   } catch (e) {
     console.error("Relaying failed");
-  }
-}
-
-async function waitForTransactionReceipt(client: ExtendedClient, hash: Hex) {
-  while (true) {
-    try {
-      return await client.getTransactionReceipt({ hash });
-    } catch (e) {
-      console.log(e instanceof Error ? e.message : String(e));
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 10));
   }
 }
 
