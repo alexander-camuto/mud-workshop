@@ -68,7 +68,7 @@ async function writeMove(
     await clearTxQueue(sourceClient);
   }
 
-  await worldContract.simulate.app__move([directionIndex]);
+  // await worldContract.simulate.app__move([directionIndex]);
   const hash = await worldContract.write.app__move([directionIndex]);
   // await world.waitForTransaction(hash);
   const receipt = await waitForTransactionReceipt(sourceClient, hash);
