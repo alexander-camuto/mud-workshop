@@ -12,7 +12,8 @@ function constructExplorerUrl(
   worldAddress: string,
   address: Address,
 ) {
-  const url = new URL(`worlds/${worldAddress}/explore`, baseUrl);
+  const cleanBaseUrl = baseUrl.replace(/\/+$/, "");
+  const url = `${cleanBaseUrl}/${worldAddress}/explore`;
   const params = new URLSearchParams({
     // Position table
     tableId:
