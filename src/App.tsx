@@ -20,6 +20,7 @@ import { getWorld } from "./contract";
 import { waitForTransactionReceipt } from "./waitForTransactionReceipt";
 import { useClients } from "./useClients";
 import { useFastestRegion } from "./useFastestRegion";
+import { getNonceManager } from "@latticexyz/common";
 
 /*
   // From MoveSystem
@@ -43,13 +44,30 @@ function getInitialPosition(player: Address) {
   return { x, y };
 }
 
+async function clearTxQueue(client: ExtendedClient) {
+  const nonceManager = await getNonceManager({
+    client,
+    address: account.address,
+  });
+  nonceManager.mempoolQueue.clear();
+}
+
 async function writeMove(
   sourceClient: ExtendedClient,
   targetClient: ExtendedClient,
   worldContract: ReturnType<typeof getWorld>,
   direction: Direction,
+  currentPlayer?: {
+    player: Address;
+    direction: number;
+  },
 ) {
   const directionIndex = enums.Direction.indexOf(direction);
+
+  if (currentPlayer && directionIndex !== currentPlayer.direction) {
+    await clearTxQueue(sourceClient);
+  }
+
   await worldContract.simulate.app__move([directionIndex]);
   const hash = await worldContract.write.app__move([directionIndex]);
   // await world.waitForTransaction(hash);
@@ -63,6 +81,7 @@ async function writeMove(
     });
 
     if (logs.length > 0) {
+      await clearTxQueue(sourceClient);
       await Promise.all(
         logs.map((log) => relay(sourceClient, targetClient, log)),
       );
@@ -83,6 +102,11 @@ export function App() {
     [players1, players2],
   );
 
+  const initialPosition = useMemo(
+    () => getInitialPosition(account.address),
+    [account.address],
+  );
+
   const region = useFastestRegion();
   const clients = useClients();
 
@@ -100,11 +124,6 @@ export function App() {
 
   const onMove = useMemo(
     () => async (direction: Direction) => {
-      if (!account.address) {
-        console.warn("No player address");
-        return;
-      }
-
       if (!clients) {
         console.warn("Clients not available");
         return;
@@ -122,9 +141,7 @@ export function App() {
         return;
       }
 
-      const x = currentPlayer
-        ? currentPlayer.x
-        : getInitialPosition(account.address).x;
+      const x = currentPlayer ? currentPlayer.x : initialPosition.x;
 
       const [world, sourceClient, targetClient] =
         x < mapSize / 2
@@ -137,6 +154,7 @@ export function App() {
           targetClient,
           world.worldContract,
           direction,
+          currentPlayer,
         );
       } catch (e) {
         console.log(e instanceof Error ? e.message : String(e));
