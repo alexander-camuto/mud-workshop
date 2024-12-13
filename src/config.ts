@@ -34,6 +34,7 @@ async function findFastestRegion(regions: Region[]): Promise<number> {
     const latency = await checkLatency(region.rpcUrls[0]);
     latencies.push(latency);
   }
+  console.log({ latencies });
 
   const fastestIndex = latencies.reduce((fastest, current, index) => {
     return current < (latencies[fastest] || 0) ? index : fastest;
