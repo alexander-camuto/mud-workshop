@@ -9,20 +9,41 @@ const keys = new Map<KeyboardEvent["key"], Direction>([
 ]);
 
 export const useKeyboardMovement = (
-  move: undefined | ((direction: Direction) => void)
+  move: undefined | ((direction: Direction) => void),
+  stopMoving: undefined | (() => void),
 ) => {
   useEffect(() => {
-    if (!move) return;
+    if (!move || !stopMoving) return;
 
-    const listener = (event: KeyboardEvent) => {
+    const pressedKeys = new Set<string>();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       const direction = keys.get(event.key);
       if (direction == null) return;
 
       event.preventDefault();
+      pressedKeys.add(event.key);
       move(direction);
     };
 
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, [move]);
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (keys.has(event.key)) {
+        event.preventDefault();
+        pressedKeys.delete(event.key);
+
+        // Only stop if no movement keys are being pressed
+        if (pressedKeys.size === 0) {
+          stopMoving();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [move, stopMoving]);
 };

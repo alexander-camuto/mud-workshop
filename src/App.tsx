@@ -163,6 +163,26 @@ export function App() {
     [worldContracts, currentPlayer, account.address],
   );
 
+  const onStopMoving = useMemo(
+    () => async () => {
+      if (!clients) {
+        console.warn("Clients not available");
+        return;
+      }
+
+      const x = currentPlayer ? currentPlayer.x : initialPosition.x;
+
+      const sourceClient = x < mapSize / 2 ? clients[0] : clients[1];
+
+      try {
+        await clearTxQueue(sourceClient);
+      } catch (e) {
+        console.log(e instanceof Error ? e.message : String(e));
+      }
+    },
+    [worldContracts, currentPlayer, account.address],
+  );
+
   // Display owned players, or if there are two non-owned players, display the most recent one
   const playersToRender = useMemo(() => {
     const playersByAddress = new Map();
@@ -182,7 +202,11 @@ export function App() {
       {isLive ? (
         <>
           <div className="flex justify-center items-center min-h-[80vh]">
-            <GameMap players={playersToRender} onMove={onMove} />
+            <GameMap
+              players={playersToRender}
+              onMove={onMove}
+              onStopMoving={onStopMoving}
+            />
 
             {/* Portal line in the middle */}
             <div

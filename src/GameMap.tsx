@@ -17,6 +17,7 @@ export type Props = {
   }[];
 
   readonly onMove?: (direction: Direction) => void;
+  readonly onStopMoving?: () => void;
 };
 
 const rotateClassName = {
@@ -26,8 +27,8 @@ const rotateClassName = {
   West: "-rotate-90",
 } as const satisfies Record<Direction, `${"" | "-"}rotate-${number}`>;
 
-export function GameMap({ players = [], onMove }: Props) {
-  useKeyboardMovement(onMove);
+export function GameMap({ players = [], onMove, onStopMoving }: Props) {
+  useKeyboardMovement(onMove, onStopMoving);
 
   const portals1 = useRecords({ stash: stash1, table: tables.Portal });
   const portals2 = useRecords({ stash: stash2, table: tables.Portal });
@@ -70,7 +71,7 @@ export function GameMap({ players = [], onMove }: Props) {
                   className={twMerge(
                     "outline-0 absolute inset-0 cursor-pointer grid p-4",
                     rotateClassName[direction],
-                    "transition bg-gradient-to-t from-transparent via-transparent to-blue-50 text-blue-400 opacity-0 hover:opacity-40 active:opacity-100"
+                    "transition bg-gradient-to-t from-transparent via-transparent to-blue-50 text-blue-400 opacity-0 hover:opacity-40 active:opacity-100",
                   )}
                   style={{ clipPath: "polygon(0% 0%, 100% 0%, 50% 50%)" }}
                   onClick={() => onMove(direction)}
