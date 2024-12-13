@@ -36,7 +36,7 @@ export function useWorldContract() {
         abi: npcContract.abi,
         args: [
           worldAddress,
-          "0x75afe612b0b6963f407aaBFbBc1096c1587456d9",
+          "0x2E7bFE921F2f87c6EA60F1281f696cD0fD5e640C",
           target,
         ],
         bytecode: npcContract.bytecode.object as `0x${string}`,
@@ -48,7 +48,7 @@ export function useWorldContract() {
       abi: npcContract.abi,
       args: [
         worldAddress,
-        "0x75afe612b0b6963f407aaBFbBc1096c1587456d9",
+        "0x2E7bFE921F2f87c6EA60F1281f696cD0fD5e640C",
         target,
       ],
       bytecode: npcContract.bytecode.object as `0x${string}`,
