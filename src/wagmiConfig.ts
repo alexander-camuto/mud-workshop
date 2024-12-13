@@ -21,7 +21,7 @@ const chains = [
       default: {} as never,
       worldsExplorer: {
         name: "MUD Worlds Explorer",
-        url: "http://localhost:13690/anvil/worlds",
+        url: "https://explorer.mud.dev/rhodolite/worlds",
       },
     },
   },
